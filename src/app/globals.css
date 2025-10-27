@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Force visible horizontal scrollbar */
+.scrollbar-visible {
+  overflow-x: scroll !important;
+}
+
+.scrollbar-visible::-webkit-scrollbar {
+  height: 10px !important;
+  background-color: rgba(200, 200, 200, 0.3); /* Light background track */
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 100, 100, 0.7); /* Dark thumb */
+  border-radius: 5px;
+}
+
+
+@supports (-webkit-touch-callout: none) {
+  .scrollbar-visible::-webkit-scrollbar {
+    -webkit-appearance: none;
+    height: 8px !important;
+  }
+}
+
+
+
+
+:root {
+  /* light theme consts */
+  /* --background: #ffffff;
+  --foreground: #171717; */
+}
+
+@media (prefers-color-scheme: dark) {
+  /* dark theme consts */
+  :root {
+    /* --background: #0a0a0a;
+    --foreground: #ededed; */
+  }
+}
+
+body {
+  font-family: var(--font-prompt), sans-serif;
+}
+
+/* .swiper-button-next::before,
+.swiper-button-next::after,
+.swiper-button-prev::before,
+.swiper-button-prev::after {
+	display: none;
+} */
+
+.no-scrollbar {
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none; /* For Internet Explorer and Edge */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* For Chrome, Safari, and Opera */
+}
+
+.placeholder-center::placeholder {
+  text-align: center;
+}
+.ant-select-selection-item {
+  color: grey;
+}
+
+/* Scrollbar always visible for horizontal scroll */
+.horizontal-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.horizontal-scroll {
+  scrollbar-width: auto; /* Firefox */
+  overflow-x: scroll !important;
+}
+
+:where(.css-dev-only-do-not-override-7ny38l).ant-menu-light.ant-menu-horizontal
+  > .ant-menu-item-selected,
+:where(.css-dev-only-do-not-override-7ny38l).ant-menu-light
+  > .ant-menu.ant-menu-horizontal
+  > .ant-menu-item-selected,
+:where(.css-dev-only-do-not-override-7ny38l).ant-menu-light.ant-menu-horizontal
+  > .ant-menu-submenu-selected,
+:where(.css-dev-only-do-not-override-7ny38l).ant-menu-light
+  > .ant-menu.ant-menu-horizontal
+  > .ant-menu-submenu-selected {
+  color: #784ca0;
+  background-color: transparent;
+}
+
+.rating-container {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.8s ease-out forwards;
+}
+
+.animate-popIn {
+  animation: popIn 0.6s ease-out forwards;
+}
+
+@media (min-width: 1024px) {
+  .custom-swiper .swiper-wrapper {
+    width: 99vw !important;
+    justify-content: center !important;
+  }
+}
+
+.margin-bottom-unset {
+  margin-bottom: 0 !important;
+}
+
+.swiper-slide {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
