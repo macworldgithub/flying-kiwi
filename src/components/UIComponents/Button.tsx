@@ -15,6 +15,8 @@ const buttonVariants = cva(
         outline:
           "border border-gray-300 bg-white text-gray-800 hover:bg-gray-100",
         ghost: "text-gray-800 hover:bg-gray-100",
+        gradient:
+          "bg-gradient-to-r from-[#13AFF0] to-[#EB0FB6] text-white hover:opacity-90 focus-visible:ring-pink-400",
       },
       size: {
         sm: "h-8 px-3 text-sm",
@@ -28,7 +30,6 @@ const buttonVariants = cva(
     },
   }
 );
-
 export interface ButtonProps
   extends Omit<HTMLMotionProps<"button">, "ref" | "children">,
     VariantProps<typeof buttonVariants> {
@@ -55,7 +56,7 @@ export const Button: React.FC<ButtonProps> = ({
     disabled={isLoading || disabled}
     className={cn(
       buttonVariants({ variant, size }),
-      "disabled:opacity-50",
+      "disabled:opacity-50 cursor-pointer",
       className
     )}
     {...props}
