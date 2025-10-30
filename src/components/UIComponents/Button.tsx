@@ -6,14 +6,14 @@ import { VariantProps, cva } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center font-medium rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed select-none",
+  "inline-flex items-center justify-center font-medium rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition-all disabled:opacity-50 select-none",
   {
     variants: {
       variant: {
         primary:
           "bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500",
         outline:
-          "border border-gray-300 bg-white text-gray-800 hover:bg-gray-100 focus-visible:ring-gray-400",
+          "border border-gray-300 bg-white text-gray-800 hover:bg-blue-100 focus-visible:ring-gray-400",
         ghost:
           "text-gray-800 hover:bg-gray-100 focus-visible:ring-gray-300 dark:text-white dark:hover:bg-gray-800",
         gradient:
