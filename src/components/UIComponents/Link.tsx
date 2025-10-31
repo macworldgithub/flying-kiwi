@@ -26,19 +26,21 @@ export const Link: React.FC<LinkProps> = ({
         className
       )}
     >
-      <span className="">{label}</span>
+      <span className="relative pb-1"> 
+        {label}
 
-      <div
-        className="absolute bottom-[-6px] left-0 h-[4px] w-0 opacity-0 overflow-hidden 
-                   transition-all duration-500 ease-out 
-                   group-hover:w-full group-hover:opacity-100"
-      >
-        <img
-          src="/images/link-hover.png"
-          alt="hover line"
-          className="h-full w-full object-cover"
-        />
-      </div>
+        <span
+          className="absolute left-0 bottom-0 h-[3px] w-0 opacity-0 overflow-hidden
+                     transition-all duration-500 ease-out
+                     group-hover:w-full group-hover:opacity-100"
+        >
+          <img
+            src="/images/link-hover.png"
+            alt="hover line"
+            className="h-full w-full object-cover"
+          />
+        </span>
+      </span>
     </NextLink>
   );
 };
