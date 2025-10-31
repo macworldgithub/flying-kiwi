@@ -1,7 +1,7 @@
 "use client";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { X } from "lucide-react";
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./Button";
 
@@ -21,9 +21,7 @@ interface BannerProps {
   overlayOpacity?: number;
   align?: "left" | "center" | "right";
   stats?: StatItem[];
-  waveColor?: string;
-  showTopWave?: boolean;
-  showBottomWave?: boolean;
+  showFloatingCircles?: boolean;
 }
 
 export const Banner: React.FC<BannerProps> = ({
@@ -37,9 +35,7 @@ export const Banner: React.FC<BannerProps> = ({
   overlayOpacity = 0.5,
   align = "center",
   stats,
-  waveColor = "#ffffff",
-  showTopWave = false,
-  showBottomWave = true,
+  showFloatingCircles = false,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -58,7 +54,7 @@ export const Banner: React.FC<BannerProps> = ({
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className={cn(
-          "relative w-full min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] lg:min-h-[90vh] flex flex-col justify-center overflow-hidden shadow-lg mt-10 sm:mt-12 md:mt-16",
+          "relative w-full min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] lg:min-h-[90vh] flex flex-col justify-center overflow-hidden shadow-lg",
           alignmentClasses[align]
         )}
       >
@@ -74,24 +70,103 @@ export const Banner: React.FC<BannerProps> = ({
           style={{ opacity: overlayOpacity }}
         />
 
-        {showTopWave && (
-          <svg
-            className="absolute top-0 left-0 w-full h-[100px] sm:h-[120px] md:h-[150px]"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 1440 320"
-            preserveAspectRatio="none"
-          >
-            <path
-              fill={waveColor}
-              d="M0,224 C480,300 960,150 1440,224 L1440,0 L0,0 Z"
-            ></path>
-          </svg>
+        {/* --- Fixed positioned circular images (edge decorations) --- */}
+        {showFloatingCircles && (
+          <>
+            {/* Top-left circle */}
+            <motion.img
+              src="/images/circle1.png"
+              alt="circle-topleft"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 0.9, scale: 1, y: [0, -8, 0] }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                repeatType: "mirror",
+                delay: 0.3,
+              }}
+              className="absolute rounded-full object-cover mix-blend-lighten opacity-70"
+              style={{
+                top: "12%",
+                left: "10%",
+                width: "70px",
+                height: "70px",
+                boxShadow: "0 0 15px rgba(255,255,255,0.25)",
+              }}
+            />
+
+            {/* Top-right circle */}
+            <motion.img
+              src="/images/circle2.png"
+              alt="circle-topright"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 0.85, scale: 1, y: [0, -8, 0] }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                repeatType: "mirror",
+                delay: 0.6,
+              }}
+              className="absolute rounded-full object-cover mix-blend-lighten opacity-70"
+              style={{
+                top: "15%",
+                right: "12%",
+                width: "90px",
+                height: "90px",
+                boxShadow: "0 0 18px rgba(255,255,255,0.25)",
+              }}
+            />
+
+            {/* Bottom-left circle */}
+            <motion.img
+              src="/images/circle3.png"
+              alt="circle-bottomleft"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 0.9, scale: 1, y: [0, 8, 0] }}
+              transition={{
+                duration: 4.5,
+                repeat: Infinity,
+                repeatType: "mirror",
+                delay: 0.9,
+              }}
+              className="absolute rounded-full object-cover mix-blend-lighten opacity-70"
+              style={{
+                bottom: "15%",
+                left: "8%",
+                width: "80px",
+                height: "80px",
+                boxShadow: "0 0 18px rgba(255,255,255,0.25)",
+              }}
+            />
+
+            {/* Bottom-right circle */}
+            <motion.img
+              src="/images/circle4.png"
+              alt="circle-bottomright"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 0.9, scale: 1, y: [0, 10, 0] }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                repeatType: "mirror",
+                delay: 1.2,
+              }}
+              className="absolute rounded-full object-cover mix-blend-lighten opacity-70"
+              style={{
+                bottom: "12%",
+                right: "10%",
+                width: "100px",
+                height: "100px",
+                boxShadow: "0 0 20px rgba(255,255,255,0.3)",
+              }}
+            />
+          </>
         )}
 
         {/* Content */}
         <div
           className={cn(
-            "relative z-10 flex flex-col gap-4 px-4 sm:px-8 md:px-12 lg:px-20 xl:px-28 text-white max-w-[1400px] w-full",
+            "relative z-10 flex flex-col gap-4 p-20 lg:p-[10rem] px-4 sm:px-8 lg:px-20 xl:px-28 text-white max-w-[1400px] w-full",
             alignmentClasses[align]
           )}
         >
@@ -171,8 +246,8 @@ export const Banner: React.FC<BannerProps> = ({
                 align === "right"
                   ? "justify-end text-right sm:items-end"
                   : align === "center"
-                  ? "justify-center text-center sm:items-center"
-                  : "justify-start text-left sm:items-start"
+                    ? "justify-center text-center sm:items-center"
+                    : "justify-start text-left sm:items-start"
               )}
             >
               {stats.map((stat, index) => (
@@ -194,20 +269,6 @@ export const Banner: React.FC<BannerProps> = ({
             </motion.div>
           )}
         </div>
-
-        {showBottomWave && (
-          <svg
-            className="absolute bottom-0 left-0 w-full h-[100px] sm:h-[120px] md:h-[150px]"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 1440 320"
-            preserveAspectRatio="none"
-          >
-            <path
-              fill={waveColor}
-              d="M0,224 C480,300 960,150 1440,224 L1440,320 L0,320 Z"
-            ></path>
-          </svg>
-        )}
       </motion.div>
     </AnimatePresence>
   );

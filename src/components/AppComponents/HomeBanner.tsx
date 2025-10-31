@@ -21,23 +21,10 @@ const HomeBanner = () => {
         backgroundImage="/images/banner.png"
         overlayOpacity={0.45}
         align="left"
-        waveColor="#ffffff"
       />
 
-      <div className="relative bg-white overflow-hidden">
-        <svg
-          className="absolute -top-px left-0 w-full h-[100px]"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 1500 150"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,50 C250,150 1250,-50 1500,50 L1500,0 L0,0 Z"
-            fill="white"
-          />
-        </svg>
-
-        <div className="relative z-10 w-full flex flex-col lg:flex-row items-center justify-between py-12 px-6 sm:px-10 md:px-16 lg:px-20 gap-10">
+      <div className="relative bg-white overflow-hidden -mt-px">
+        <div className="relative z-10 w-full flex flex-col lg:flex-row items-center justify-between py-16 px-6 sm:px-10 md:px-16 lg:px-20 gap-10">
           <div className="w-full lg:w-1/2 text-left">
             <Heading title="Who We Are?" level={3} align="left" />
 

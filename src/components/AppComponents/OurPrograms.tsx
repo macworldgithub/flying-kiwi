@@ -51,7 +51,7 @@ const OurPrograms = () => {
   ];
 
   return (
-    <section className="py-12 px-4 sm:px-6 md:px-10 lg:px-20 relative">
+    <section className="relative px-4 sm:px-6 md:px-10 lg:px-20 bg-white overflow-hidden -mt-px">
       <Heading title="Our Programs" level={3} />
 
       <div className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-10">
