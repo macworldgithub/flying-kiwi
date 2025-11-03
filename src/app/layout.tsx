@@ -1,5 +1,8 @@
 import "./globals.css";
 import { Poppins } from "next/font/google";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import { FloatingChatButton } from "@/components/UIComponents/FloatingChatButton";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -20,7 +23,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={poppins.variable}>
-      <body>{children}</body>
+      <body className="flex flex-col min-h-screen">
+        <Navbar />
+        <main className="grow">{children}</main>
+        <Footer />
+        <FloatingChatButton />
+      </body>
     </html>
   );
 }

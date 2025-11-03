@@ -1,11 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { Banner } from "../UIComponents/Banner";
 import { Heading } from "../UIComponents/Heading";
 import { Button } from "../UIComponents/Button";
+import { PaymentModal } from "./PaymentModal";
+import { AddTokenModal } from "./AddTokenModal";
 
-const HomeBanner = () => {
+export default function HomeBanner() {
+  const [showPayment, setShowPayment] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  const handleTokenReceived = (tokenValue: string) => {
+    console.log("💳 Token received:", tokenValue);
+    setToken(tokenValue);
+    setShowPayment(false);
+    setTimeout(() => setShowTokenModal(true), 400);
+  };
+
   return (
     <div className="w-full">
       <Banner
@@ -17,7 +31,7 @@ const HomeBanner = () => {
           { value: "100%", label: "Reliable Coverage" },
         ]}
         buttonText="Switch to E-sim"
-        onButtonClick={() => alert("Banner button clicked!")}
+        onButtonClick={() => setShowPayment(true)}
         backgroundImage="/images/banner.png"
         overlayOpacity={0.45}
         align="left"
@@ -27,12 +41,10 @@ const HomeBanner = () => {
         <div className="relative z-10 w-full flex flex-col lg:flex-row items-center justify-between py-16 px-6 sm:px-10 md:px-16 lg:px-20 gap-10">
           <div className="w-full lg:w-1/2 text-left">
             <Heading title="Who We Are?" level={3} align="left" />
-
             <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed mb-6 max-w-lg">
               We are a nonprofit organization committed to empowering children
               through access to quality education, learning tools, and
-              mentorship. Since 1986, we’ve helped over 30,000 children take
-              their first steps toward a brighter future.
+              mentorship.
             </p>
 
             <Button
@@ -56,8 +68,18 @@ const HomeBanner = () => {
           </div>
         </div>
       </div>
+
+      <PaymentModal
+        isOpen={showPayment}
+        onClose={() => setShowPayment(false)}
+        onTokenReceived={handleTokenReceived}
+      />
+
+      <AddTokenModal
+        isOpen={showTokenModal}
+        token={token ?? ""}
+        onClose={() => setShowTokenModal(false)}
+      />
     </div>
   );
-};
-
-export default HomeBanner;
+}
