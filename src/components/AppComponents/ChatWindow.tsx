@@ -51,9 +51,7 @@ const ChatWindow = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const data = await response.json();
       if (!sessionId && data.session_id) setSessionId(data.session_id);
@@ -97,20 +95,19 @@ const ChatWindow = () => {
 
   return (
     <>
-      {/* Background Layer */}
-      <div className="fixed inset-0 z-40">
+      <div
+        className="fixed inset-0 z-40 pointer-events-none select-none"
+        aria-hidden="true"
+      >
         <div
           className="absolute inset-0 bg-cover bg-center blur-sm opacity-60"
-          style={{
-            backgroundImage: "url('/images/banner.png')",
-          }}
+          style={{ backgroundImage: "url('/images/banner.png')" }}
         />
         <div className="absolute inset-0 bg-linear-to-br from-[#0E3B5C]/80 via-[#05263D]/90 to-[#000000]/85 backdrop-blur-md" />
       </div>
 
-      {/* Chat Window */}
-      <div className="fixed inset-0 flex items-center justify-center z-50">
-        <div className="w-full max-w-3xl h-[650px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+        <div className="pointer-events-auto w-full max-w-3xl h-[650px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex justify-between items-center p-4 bg-linear-to-r from-[#A9D7F1] via-[#F9F4F8] to-[#F8CFF3] shadow-md">
             <div className="flex items-center gap-2">

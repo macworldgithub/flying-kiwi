@@ -5,9 +5,10 @@ import { cn } from "@/lib/utils";
 
 interface LinkProps {
   href: string;
-  label: string;
+  label?: string;
   external?: boolean;
   className?: string;
+  children?: React.ReactNode; 
 }
 
 export const Link: React.FC<LinkProps> = ({
@@ -15,6 +16,7 @@ export const Link: React.FC<LinkProps> = ({
   label,
   external,
   className,
+  children,
 }) => {
   return (
     <NextLink
@@ -26,21 +28,24 @@ export const Link: React.FC<LinkProps> = ({
         className
       )}
     >
-      <span className="relative pb-1"> 
-        {label}
-
-        <span
-          className="absolute left-0 bottom-0 h-[3px] w-0 opacity-0 overflow-hidden
-                     transition-all duration-500 ease-out
-                     group-hover:w-full group-hover:opacity-100"
-        >
-          <img
-            src="/images/link-hover.png"
-            alt="hover line"
-            className="h-full w-full object-cover"
-          />
+      {children ? (
+        children
+      ) : (
+        <span className="relative pb-1">
+          {label}
+          <span
+            className="absolute left-0 bottom-0 h-[3px] w-0 opacity-0 overflow-hidden
+                       transition-all duration-500 ease-out
+                       group-hover:w-full group-hover:opacity-100"
+          >
+            <img
+              src="/images/link-hover.png"
+              alt="hover line"
+              className="h-full w-full object-cover"
+            />
+          </span>
         </span>
-      </span>
+      )}
     </NextLink>
   );
 };

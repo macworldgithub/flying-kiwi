@@ -21,14 +21,16 @@ export const Navbar: React.FC = () => {
     <header className="fixed top-0 left-0 z-50 w-full border-b border-gray-200 bg-white/70 backdrop-blur-md">
       <div className="flex items-center justify-between px-[40px] py-3 md:py-4">
         <div className="flex items-center gap-2">
-          <Image
-            src="/images/logo.png"
-            alt="Flying Kiwi Logo"
-            width={257}
-            height={37}
-            className="object-contain"
-            priority
-          />
+          <Link href="/">
+            <Image
+              src="/images/logo.png"
+              alt="Flying Kiwi Logo"
+              width={257}
+              height={37}
+              className="object-contain cursor-pointer"
+              priority
+            />
+          </Link>
         </div>
 
         <nav className="hidden md:flex items-center space-x-8">
