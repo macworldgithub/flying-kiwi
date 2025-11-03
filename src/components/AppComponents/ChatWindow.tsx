@@ -39,8 +39,8 @@ const ChatWindow = () => {
 
     try {
       const payload = sessionId
-        ? { query: userMsg.text, session_id: sessionId }
-        : { query: userMsg.text };
+      ? { query: userMsg.text, session_id: sessionId, brand: "flying-kiwi" }
+      : { query: userMsg.text, brand: "flying-kiwi" };
 
       const response = await fetch("/api", {
         method: "POST",
