@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { Heading } from "../UIComponents/Heading";
+import { FormInput } from "../UIComponents/FormInput";
+import { Button } from "../UIComponents/Button";
 
 interface PaymentProcessModalProps {
   isOpen: boolean;
@@ -45,11 +49,13 @@ export const PaymentProcessModal = ({
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Payment failed");
 
-      alert("✅ Payment processed successfully!");
-      onClose();
+      setMessage("✅ Payment processed successfully!");
+      setTimeout(onClose, 1000);
     } catch (error: any) {
-      alert("❌ " + (error.message || "Something went wrong"));
-      setMessage("❌ " + (error.message || "Something went wrong"));
+      setMessage(
+        "❌ Payment was not completed" +
+          (error.message || "Something went wrong")
+      );
     } finally {
       setLoading(false);
     }
@@ -57,98 +63,97 @@ export const PaymentProcessModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-xl">
-        <h2 className="text-xl font-bold text-center mb-4">
-          Process Payment
-        </h2>
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ duration: 0.25 }}
+        className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-xl"
+      >
+        <Heading
+          title="Process Payment"
+          subtitle="Enter your payment details to complete the transaction"
+          align="center"
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Customer Number
-            </label>
-            <input
-              name="custNo"
-              value={formData.custNo}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <FormInput
+            label="Customer Number"
+            name="custNo"
+            value={formData.custNo}
+            onChange={handleChange}
+            required
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Amount
-            </label>
-            <input
-              name="amount"
-              type="number"
-              value={formData.amount}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              required
-            />
-          </div>
+          <FormInput
+            label="Amount"
+            name="amount"
+            type="number"
+            value={formData.amount}
+            onChange={handleChange}
+            required
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Payment ID
-            </label>
-            <input
-              name="paymentId"
-              value={formData.paymentId}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              required
-            />
-          </div>
+          <FormInput
+            label="Payment ID"
+            name="paymentId"
+            value={formData.paymentId}
+            onChange={handleChange}
+            required
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Email
-            </label>
-            <input
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              required
-            />
-          </div>
+          <FormInput
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Comment
-            </label>
-            <input
-              name="comment"
-              value={formData.comment}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
+          <FormInput
+            label="Comment"
+            name="comment"
+            value={formData.comment}
+            onChange={handleChange}
+          />
 
-          <button
+          <Button
             type="submit"
+            fullWidth
+            size="lg"
+            variant="gradient"
+            isLoading={loading}
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold disabled:bg-blue-300"
           >
             {loading ? "Processing..." : "Submit Payment"}
-          </button>
+          </Button>
         </form>
 
         {message && (
-          <p className="mt-4 text-center text-sm text-gray-700">{message}</p>
+          <p
+            className={`mt-4 text-center text-sm ${
+              message.startsWith("✅")
+                ? "text-green-600"
+                : message.startsWith("❌")
+                ? "text-red-500"
+                : "text-gray-600"
+            }`}
+          >
+            {message}
+          </p>
         )}
 
-        <button
+        <Button
+          variant="outline"
+          fullWidth
+          size="md"
+          className="mt-6 border-t border-gray-200"
           onClick={onClose}
-          className="mt-6 w-full py-2 text-blue-600 font-semibold border-t border-gray-200"
         >
           Close
-        </button>
-      </div>
+        </Button>
+      </motion.div>
     </div>
   );
 };

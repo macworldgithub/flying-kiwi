@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { PaymentProcessModal } from "./PaymentProcessModal";
+import { Heading } from "../UIComponents/Heading";
+import { FormInput } from "../UIComponents/FormInput";
+import { Button } from "../UIComponents/Button";
 
 interface AddTokenModalProps {
   isOpen: boolean;
@@ -43,10 +47,12 @@ export const AddTokenModal = ({
       if (!response.ok)
         throw new Error(data.message || "Failed to add payment method");
 
-      alert("✅ Payment method added successfully!");
+      setMessage("✅ Payment method added successfully!");
       setOpenPaymentModal(true);
     } catch (error: any) {
-      setMessage("❌ " + (error.message || "Something went wrong"));
+      setMessage(
+        "❌ Card not added" + (error.message || "Something went wrong")
+      );
     } finally {
       setLoading(false);
     }
@@ -55,43 +61,63 @@ export const AddTokenModal = ({
   return (
     <>
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl">
-          <h2 className="text-xl font-bold text-center mb-4">
-            Add Payment Method
-          </h2>
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl"
+        >
+          <Heading
+            title="Add Payment Method"
+            level={4}
+            subtitle="Enter your payment token below to add your card."
+            align="center"
+          />
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <label className="block text-sm font-medium text-gray-600">
-              Enter Token
-            </label>
-            <input
-              type="text"
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <FormInput
+              label="Enter Token"
               value={inputToken}
               onChange={(e) => setInputToken(e.target.value)}
-              placeholder="Enter single-use token"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
-            <button
+            <Button
               type="submit"
-              disabled={loading || !inputToken}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold disabled:bg-blue-300"
+              fullWidth
+              variant="gradient"
+              size="lg"
+              isLoading={loading}
+              disabled={!inputToken || loading}
             >
               {loading ? "Submitting..." : "Submit Token"}
-            </button>
+            </Button>
           </form>
 
           {message && (
-            <p className="mt-4 text-center text-sm text-gray-700">{message}</p>
+            <p
+              className={`mt-4 text-center text-sm ${
+                message.startsWith("✅")
+                  ? "text-green-600"
+                  : message.startsWith("❌")
+                  ? "text-red-500"
+                  : "text-gray-600"
+              }`}
+            >
+              {message}
+            </p>
           )}
 
-          <button
+          <Button
+            variant="outline"
+            fullWidth
+            size="md"
+            className="mt-6 border-t border-gray-200"
             onClick={onClose}
-            className="mt-6 w-full py-2 text-blue-600 font-semibold border-t border-gray-200"
           >
             Close
-          </button>
-        </div>
+          </Button>
+        </motion.div>
       </div>
 
       <PaymentProcessModal

@@ -14,7 +14,7 @@ export default function HomeBanner() {
   const [token, setToken] = useState<string | null>(null);
 
   const handleTokenReceived = (tokenValue: string) => {
-    console.log("💳 Token received:", tokenValue);
+    console.log("Token received:", tokenValue);
     setToken(tokenValue);
     setShowPayment(false);
     setTimeout(() => setShowTokenModal(true), 400);

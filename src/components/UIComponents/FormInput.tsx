@@ -13,10 +13,15 @@ export const FormInput: React.FC<FormInputProps> = ({
   label,
   icon,
   className,
+  value,
+  onChange,
   ...props
 }) => {
   const [focused, setFocused] = useState(false);
-  const [value, setValue] = useState(props.value || "");
+
+  const hasValue =
+    (typeof value === "string" && value.length > 0) ||
+    (typeof value === "number" && value !== 0);
 
   return (
     <div className="relative w-full max-w-md">
@@ -25,10 +30,11 @@ export const FormInput: React.FC<FormInputProps> = ({
           {icon}
         </div>
       )}
+
       <input
         {...props}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={onChange} // ✅ use parent handler
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         className={cn(
@@ -37,11 +43,12 @@ export const FormInput: React.FC<FormInputProps> = ({
           className
         )}
       />
+
       <motion.label
         animate={{
-          y: focused || value ? -22 : -4,
+          y: focused || hasValue ? -22 : -4,
           x: icon ? 24 : 12,
-          scale: focused || value ? 0.85 : 1,
+          scale: focused || hasValue ? 0.85 : 1,
           color: focused ? "#2563eb" : "#6b7280",
         }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}

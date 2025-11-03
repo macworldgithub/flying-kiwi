@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import { motion, type HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -21,9 +22,9 @@ const buttonVariants = cva(
       },
       size: {
         sm: "h-8 px-3 text-xs sm:text-sm md:text-sm",
-        md: "h-10 px-4 text-sm sm:text-base md:text-base", 
+        md: "h-10 px-4 text-sm sm:text-base md:text-base",
         lg: "h-12 px-6 text-base sm:text-lg md:text-lg",
-        xl: "h-14 px-8 text-lg sm:text-xl md:text-xl", 
+        xl: "h-14 px-8 text-lg sm:text-xl md:text-xl",
       },
       fullWidth: {
         true: "w-full",
@@ -45,6 +46,7 @@ export interface ButtonProps
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   children?: React.ReactNode;
+  type?: "button" | "submit" | "reset"; 
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -57,13 +59,17 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth,
   className,
   disabled,
+  type = "button",
   ...props
 }) => (
   <motion.button
+    type={type} 
     whileTap={{ scale: 0.97 }}
     whileHover={{ scale: 1.03 }}
     transition={{ type: "spring", stiffness: 300, damping: 15 }}
     disabled={isLoading || disabled}
+    aria-busy={isLoading}
+    aria-disabled={isLoading || disabled}
     className={cn(buttonVariants({ variant, size, fullWidth }), className)}
     {...props}
   >
@@ -79,10 +85,8 @@ export const Button: React.FC<ButtonProps> = ({
       )
     )}
 
-    {/* Button Text */}
-    <span className="whitespace-nowrap cursor-pointer">{children}</span>
+    <span className="whitespace-nowrap">{children}</span>
 
-    {/* Right Icon */}
     {!isLoading && rightIcon && (
       <span className="ml-2 flex items-center">
         {React.cloneElement(rightIcon as React.ReactElement<{ className?: string }>, {

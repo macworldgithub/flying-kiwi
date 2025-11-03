@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { Heading } from "../UIComponents/Heading";
+import { Button } from "../UIComponents/Button";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -16,9 +20,7 @@ export const PaymentModal = ({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      loadQuickstream();
-    }
+    if (isOpen) loadQuickstream();
   }, [isOpen]);
 
   const loadQuickstream = () => {
@@ -75,7 +77,6 @@ export const PaymentModal = ({
         },
       },
       function (errors, data) {
-        console.log("Errors:", errors);
         if (errors) {
           console.error("Frame init error:", errors);
           alert("Failed to load credit card form");
@@ -95,12 +96,10 @@ export const PaymentModal = ({
 
       setLoading(true);
       submitBtn.disabled = true;
-      submitBtn.textContent = "Processing...";
 
       trustedFrame.submitForm(function (errors: any, data: any) {
         setLoading(false);
         submitBtn.disabled = false;
-        submitBtn.textContent = "Submit";
 
         if (errors) {
           const msg = Array.isArray(errors)
@@ -111,7 +110,6 @@ export const PaymentModal = ({
         }
 
         const token = data?.singleUseToken?.singleUseTokenId;
-        alert("Token created: " + token);
         if (onTokenReceived) onTokenReceived(token);
         onClose();
       });
@@ -122,39 +120,52 @@ export const PaymentModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
-      <div className="bg-white w-full sm:max-w-lg rounded-t-2xl shadow-xl p-6 animate-slide-up">
-        <div className="text-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">
-            Add Payment Method
-          </h2>
-          <p className="text-gray-500 text-sm">
-            Securely add your card details below
-          </p>
-        </div>
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 100, opacity: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className={cn(
+          "bg-white w-full sm:max-w-lg rounded-t-2xl shadow-xl p-6 relative"
+        )}
+      >
+        <Heading
+          title="Add Payment Method"
+          level={4}
+          subtitle="Securely add your card details below"
+          align="center"
+        />
 
-        <form id="payment-form">
+        <form id="payment-form" className="flex flex-col gap-4">
           <div
             data-quickstream-api="creditCardContainer"
             id="creditCardContainer"
-            className="w-full h-[420px]"
+            className="w-full h-[420px] rounded-lg border border-gray-200"
           />
-          <button
+
+          <Button
             id="submitBtn"
             type="submit"
+            fullWidth
+            size="lg"
+            variant="gradient"
+            isLoading={loading}
             disabled
-            className="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:bg-blue-300"
           >
             {loading ? "Processing..." : "Submit"}
-          </button>
+          </Button>
         </form>
 
-        <button
+        <Button
+          variant="outline"
+          fullWidth
+          size="md"
+          className="mt-6 border-t border-gray-200"
           onClick={onClose}
-          className="mt-6 w-full py-2 text-blue-600 font-semibold border-t border-gray-200"
         >
           Close
-        </button>
-      </div>
+        </Button>
+      </motion.div>
     </div>
   );
 };
