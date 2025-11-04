@@ -1,5 +1,8 @@
 "use client";
 import React, { useState } from "react";
+import { PaymentProcessCard } from "./PaymentProcessCard";
+import { TokenCard } from "./TokenCard";
+import { PaymentCard } from "./PaymentCard";
 
 const ChatWindow = () => {
   const [chat, setChat] = useState<
@@ -16,17 +19,204 @@ const ChatWindow = () => {
     },
   ]);
 
+  const [plans, setPlans] = useState<any[]>([]); // for storing plans
+  const [showPlans, setShowPlans] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [showDetailsForm, setShowDetailsForm] = useState(false);
+  const [showNumberButtons, setShowNumberButtons] = useState(false);
+  const [numberOptions, setNumberOptions] = useState<string[]>([]);
+  const [showPayment, setShowPayment] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [showTokenCard, setShowTokenCard] = useState(false);
+  const [paymentToken, setPaymentToken] = useState<string | null>(null);
+  const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
 
-  const sendMessage = async () => {
-    if (!message.trim() || loading) return;
+  const [formData, setFormData] = useState({
+    firstName: "",
+    surname: "",
+    email: "",
+    phone: "",
+    dob: "",
+    address: "",
+    suburb: "",
+    state: "",
+    postcode: "",
+    pin: "",
+  });
+  const [formErrors, setFormErrors] = useState({
+    firstName: "",
+    surname: "",
+    email: "",
+    phone: "",
+    dob: "",
+    address: "",
+    suburb: "",
+    state: "",
+    postcode: "",
+    pin: "",
+  });
+
+  const isDetailsRequest = (text: string): boolean => {
+    const lowerText = text.toLowerCase();
+    return (
+      lowerText.includes("first name") &&
+      lowerText.includes("surname") &&
+      lowerText.includes("email") &&
+      lowerText.includes("phone") &&
+      lowerText.includes("date of birth") &&
+      lowerText.includes("address") &&
+      lowerText.includes("suburb") &&
+      lowerText.includes("state") &&
+      lowerText.includes("postcode") &&
+      lowerText.includes("pin")
+    );
+  };
+
+  const isNumberSelection = (text: string): boolean => {
+    const matches = text.match(/04\d{8}/g);
+    return matches ? matches.length === 5 : false;
+  };
+
+  const extractNumbers = (text: string): string[] => {
+    const matches = text.match(/04\d{8}/g);
+    return matches || [];
+  };
+
+  const validateForm = (): boolean => {
+    let isValid = true;
+    const errors = {
+      firstName: "",
+      surname: "",
+      email: "",
+      phone: "",
+      dob: "",
+      address: "",
+      suburb: "",
+      state: "",
+      postcode: "",
+      pin: "",
+    };
+
+    if (!formData.firstName.trim()) {
+      errors.firstName = "First Name is required";
+      isValid = false;
+    }
+    if (!formData.surname.trim()) {
+      errors.surname = "Surname is required";
+      isValid = false;
+    }
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = "Invalid email format";
+      isValid = false;
+    }
+    if (!formData.phone.trim()) {
+      errors.phone = "Phone is required";
+      isValid = false;
+    } else if (!/^04\d{8}$/.test(formData.phone)) {
+      errors.phone =
+        "Phone must be a valid Australian mobile number (e.g., 0412345678)";
+      isValid = false;
+    }
+    if (!formData.dob.trim()) {
+      errors.dob = "Date of Birth is required";
+      isValid = false;
+    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(formData.dob)) {
+      errors.dob = "Date of Birth must be in YYYY-MM-DD format";
+      isValid = false;
+    }
+    if (!formData.address.trim()) {
+      errors.address = "Address is required";
+      isValid = false;
+    }
+    if (!formData.suburb.trim()) {
+      errors.suburb = "Suburb is required";
+      isValid = false;
+    }
+    if (!formData.state.trim()) {
+      errors.state = "State is required";
+      isValid = false;
+    }
+    if (!formData.postcode.trim()) {
+      errors.postcode = "Postcode is required";
+      isValid = false;
+    } else if (!/^\d{4}$/.test(formData.postcode)) {
+      errors.postcode = "Postcode must be 4 digits";
+      isValid = false;
+    }
+    if (!formData.pin.trim()) {
+      errors.pin = "PIN is required";
+      isValid = false;
+    } else if (!/^\d{4}$/.test(formData.pin)) {
+      errors.pin = "PIN must be exactly 4 digits";
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
+    const formatted = Object.entries(formData)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(", ");
+    setShowDetailsForm(false);
+    handleSend(formatted);
+    setFormData({
+      firstName: "",
+      surname: "",
+      email: "",
+      phone: "",
+      dob: "",
+      address: "",
+      suburb: "",
+      state: "",
+      postcode: "",
+      pin: "",
+    });
+    setFormErrors({
+      firstName: "",
+      surname: "",
+      email: "",
+      phone: "",
+      dob: "",
+      address: "",
+      suburb: "",
+      state: "",
+      postcode: "",
+      pin: "",
+    });
+  };
+
+  // Add new handler for plan selection
+  const handlePlanSelect = (plan: any) => {
+    setSelectedPlan(plan);
+    setShowPlans(false);
+    setShowPayment(true); // Show payment form
+    handleSend(`I would like to select the plan: ${plan.planName}`);
+  };
+
+  const handleSend = async (msgText: string) => {
+    if (!msgText.trim() || loading) return;
 
     const userMsg = {
       id: chat.length + 1,
       type: "user" as const,
-      text: message.trim(),
+      text: msgText.trim(),
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -39,8 +229,12 @@ const ChatWindow = () => {
 
     try {
       const payload = sessionId
-      ? { query: userMsg.text, session_id: sessionId, brand: "flying-kiwi" }
-      : { query: userMsg.text, brand: "flying-kiwi" };
+        ? {
+          query: userMsg.text,
+          session_id: sessionId,
+          brand: "prosperity-tech",
+        }
+        : { query: userMsg.text, brand: "prosperity-tech" };
 
       const response = await fetch("/api", {
         method: "POST",
@@ -51,18 +245,24 @@ const ChatWindow = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
-      if (!sessionId && data.session_id) setSessionId(data.session_id);
+      console.log("API Response:", data);
+
+      if (!sessionId && data.session_id) {
+        setSessionId(data.session_id);
+      }
+
+      const botText =
+        data?.message || data?.response || "Sorry, I couldn’t understand that.";
 
       const botMsg = {
         id: chat.length + 2,
         type: "bot" as const,
-        text:
-          data?.message ||
-          data?.response ||
-          "Sorry, I couldn’t understand that.",
+        text: botText,
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -70,144 +270,413 @@ const ChatWindow = () => {
       };
 
       setChat((prev) => [...prev, botMsg]);
+
+      if (isDetailsRequest(botText)) {
+        setShowDetailsForm(true);
+      }
+
+      if (isNumberSelection(botText)) {
+        const numbers = extractNumbers(botText);
+        setNumberOptions(numbers);
+        setShowNumberButtons(true);
+
+        // Fetch plans when numbers are suggested
+        try {
+          const plansResponse = await fetch(
+            "https://bele.omnisuiteai.com/api/v1/plans",
+            {
+              method: "GET",
+              headers: {
+                accept: "application/json",
+              },
+            }
+          );
+
+          if (!plansResponse.ok) {
+            throw new Error("Failed to fetch plans");
+          }
+
+          const plansData = await plansResponse.json();
+          // Fix: Set plans to the 'data' array from the API response
+          setPlans(plansData.data || []);
+          setShowPlans(true);
+        } catch (plansError) {
+          console.error("Error fetching plans:", plansError);
+          setPlans([]);
+          // Optionally set showPlans to false if fetch fails, or true with empty array
+          setShowPlans(true);
+        }
+      }
     } catch (error: any) {
-      console.error("Chat error:", error);
-      const errorMsg =
+      console.error("Full Chat error:", error); // Enhanced logging
+      let errorMsg = "Oops! Something went wrong. Please try again.";
+      if (
+        error.name === "TypeError" &&
         error.message.includes("Failed to fetch")
-          ? "Network error — please check your connection."
-          : "Oops! Something went wrong. Please try again.";
-      setChat((prev) => [
-        ...prev,
-        {
-          id: chat.length + 2,
-          type: "bot",
-          text: errorMsg,
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        },
-      ]);
+      ) {
+        errorMsg = "Network error (CORS?). Check console and try refreshing.";
+      } else if (error.message.includes("401")) {
+        errorMsg = "Session expired. Please log in again.";
+      }
+      const errorResponse = {
+        id: chat.length + 2,
+        type: "bot" as const,
+        text: errorMsg,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+      setChat((prev) => [...prev, errorResponse]);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <>
-      <div
-        className="fixed inset-0 z-40 pointer-events-none select-none"
-        aria-hidden="true"
-      >
-        <div
-          className="absolute inset-0 bg-cover bg-center blur-sm opacity-60"
-          style={{ backgroundImage: "url('/images/banner.png')" }}
-        />
-        <div className="absolute inset-0 bg-linear-to-br from-[#0E3B5C]/80 via-[#05263D]/90 to-[#000000]/85 backdrop-blur-md" />
-      </div>
+  const handleNumberSelect = async (number: string) => {
+    setShowNumberButtons(false);
+    handleSend(number);
+  };
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-        <div className="pointer-events-auto w-full max-w-3xl h-[650px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 bg-linear-to-r from-[#A9D7F1] via-[#F9F4F8] to-[#F8CFF3] shadow-md">
-            <div className="flex items-center gap-2">
-              <img
-                src="/images/logo.png"
-                alt="Logo"
-                className="h-10 w-auto drop-shadow-md"
-              />
-            </div>
+  const sendMessage = () => {
+    handleSend(message);
+  };
+
+  return (
+    <div className="relative flex items-center justify-center min-h-screen bg-[#05263D] overflow-hidden">
+      {/* Background layers */}
+      <div
+        className="absolute inset-0 bg-cover bg-center blur-sm opacity-60"
+        style={{ backgroundImage: "url('/images/banner.png')" }}
+      />
+      <div className="absolute inset-0 bg-linear-to-br from-[#0E3B5C]/80 via-[#05263D]/90 to-[#000000]/85 backdrop-blur-md" />
+
+      {/* Chat window container */}
+      <div className="relative z-10 w-full max-w-3xl mx-auto h-[90vh] sm:h-[85vh] md:h-[80vh] lg:h-[75vh] bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex justify-between items-center p-3 sm:p-4 bg-linear-to-r from-[#A9D7F1] via-[#F9F4F8] to-[#F8CFF3] shadow-md">
+          <div className="flex items-center gap-2">
+            <img
+              src="/images/logo.png"
+              alt="Logo"
+              className="h-8 sm:h-10 w-auto drop-shadow-md"
+            />
+          </div>
+        </div>
+
+        {/* Chat body */}
+        <div className="flex-1 flex flex-col bg-linear-to-b from-[#A9D7F1]/30 via-[#F9F4F8]/40 to-[#F8CFF3]/30 px-3 sm:px-6 py-4 sm:py-6 overflow-y-auto scroll-smooth">
+          <div className="text-center mb-4 sm:mb-6 mt-2 sm:mt-4">
+            <h2 className="text-[#0E3B5C] font-semibold text-base sm:text-lg mb-1 drop-shadow-sm">
+              How can I help you today?
+            </h2>
           </div>
 
-          {/* Chat Body */}
-          <div className="flex-1 flex flex-col bg-linear-to-b from-[#A9D7F1]/30 via-[#F9F4F8]/40 to-[#F8CFF3]/30 p-6 overflow-y-auto scroll-smooth">
-            <div className="text-center mb-6 mt-4">
-              <h2 className="text-[#0E3B5C] font-semibold text-lg mb-1 drop-shadow-sm">
-                How can I help you today?
-              </h2>
-            </div>
-
-            {chat.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex items-start gap-3 mb-5 ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
+          {chat.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
                 }`}
-              >
-                {msg.type === "bot" && (
-                  <div className="w-8 h-8 bg-linear-to-br from-[#F8CFF3] to-[#A9D7F1] rounded-full flex items-center justify-center overflow-hidden shadow-md">
-                    <img
-                      src="/images/bot.png"
-                      alt="Bot Avatar"
-                      className="w-full h-full rounded-full"
-                    />
-                  </div>
-                )}
-
-                <div
-                  className={`rounded-2xl px-5 py-3 shadow ${
-                    msg.type === "user"
-                      ? "bg-white text-[#0E3B5C]"
-                      : "bg-[#F9F4F8]/90 text-[#0E3B5C]"
-                  } max-w-[70%]`}
-                >
-                  <p className="text-sm leading-relaxed">{msg.text}</p>
-                </div>
-              </div>
-            ))}
-
-            {loading && (
-              <div className="flex items-start gap-3 mb-6">
-                <div className="w-8 h-8 bg-linear-to-br from-[#F8CFF3] to-[#A9D7F1] rounded-full flex items-center justify-center overflow-hidden shadow-md">
+            >
+              {msg.type === "bot" && (
+                <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
                   <img
                     src="/images/bot.png"
-                    alt="Loading Avatar"
-                    className="w-full h-full rounded-full"
+                    alt="Bot Avatar"
+                    className="w-full h-full rounded-full object-cover"
                   />
                 </div>
-                <div className="bg-[#F9F4F8]/90 rounded-2xl px-5 py-3 shadow max-w-[70%]">
-                  <p className="text-[#0E3B5C] text-sm leading-relaxed">
-                    Typing...
-                  </p>
+              )}
+
+              <div
+                className={`${msg.type === "user"
+                  ? "bg-white text-[#0E3B5C]"
+                  : "bg-white text-[#0E3B5C]"
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+              >
+                <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
+                  {msg.text}
+                </p>
+              </div>
+            </div>
+          ))}
+
+          {loading && (
+            <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden">
+                <img
+                  src="/images/bot.png"
+                  alt="Loading Avatar"
+                  className="w-full h-full rounded-full object-cover"
+                />
+              </div>
+              <div className="bg-white rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
+                <p className="text-[#0E3B5C] text-xs sm:text-xs md:text-sm leading-relaxed">
+                  Typing...
+                </p>
+              </div>
+            </div>
+          )}
+          {/* Input Bar */}
+          <div className="mt-auto">
+            {showDetailsForm ? (
+              <form
+                onSubmit={handleFormSubmit}
+                className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-white/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
+              >
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                  <div>
+                    <input
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleFormChange}
+                      placeholder="First Name"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.firstName && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.firstName}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="surname"
+                      value={formData.surname}
+                      onChange={handleFormChange}
+                      placeholder="Surname"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.surname && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.surname}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="email"
+                      value={formData.email}
+                      onChange={handleFormChange}
+                      placeholder="Email"
+                      type="email"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.email && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.email}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleFormChange}
+                      placeholder="Phone (e.g., 0412345678)"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.phone && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.phone}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="dob"
+                      type="date"
+                      value={formData.dob}
+                      onChange={handleFormChange}
+                      placeholder="Date of Birth"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.dob && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.dob}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="address"
+                      value={formData.address}
+                      onChange={handleFormChange}
+                      placeholder="Address"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.address && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.address}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="suburb"
+                      value={formData.suburb}
+                      onChange={handleFormChange}
+                      placeholder="Suburb"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.suburb && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.suburb}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="state"
+                      value={formData.state}
+                      onChange={handleFormChange}
+                      placeholder="State (e.g., VIC)"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.state && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.state}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="postcode"
+                      value={formData.postcode}
+                      onChange={handleFormChange}
+                      placeholder="Postcode (4 digits)"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.postcode && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.postcode}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="pin"
+                      value={formData.pin}
+                      onChange={handleFormChange}
+                      placeholder="4-digit PIN"
+                      maxLength={4}
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.pin && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.pin}
+                      </p>
+                    )}
+                  </div>
                 </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="mt-3 sm:mt-4 w-full bg-linear-to-r from-blue-600 to-teal-500 text-white text-white py-1.5 sm:py-2 rounded hover:opacity-90 text-xs sm:text-sm"
+                >
+                  Submit Details
+                </button>
+              </form>
+            ) : showNumberButtons ? (
+              <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
+                {numberOptions.map((num, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleNumberSelect(num)}
+                    disabled={loading}
+                    className="bg-linear-to-r from-blue-600 to-teal-500 text-white text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+            ) : showPlans ? (
+              <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
+                {plans.map((plan, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handlePlanSelect(plan)}
+                    className="bg-linear-to-r from-blue-600 to-teal-500 text-white text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
+                  >
+                    {plan.planName} - ${plan.price}
+                  </button>
+                ))}
+              </div>
+            ) : showPayment && selectedPlan ? (
+              <PaymentCard
+                onTokenReceived={(token) => {
+                  setPaymentToken(token);
+                  setShowPayment(false);
+                  setShowTokenCard(true);
+                  handleSend(
+                    `Payment completed for plan ${selectedPlan.planName} with token: ${token}`
+                  );
+                  setSelectedPlan(null);
+                }}
+              />
+            ) : showTokenCard && paymentToken ? (
+              <TokenCard
+                token={paymentToken}
+                onSuccess={() => {
+                  setShowTokenCard(false);
+                  setPaymentToken(null);
+                  handleSend("Payment method successfully added!");
+                  setShowPaymentProcessCard(true);
+                }}
+              />
+            ) : showPaymentProcessCard ? (
+              <PaymentProcessCard
+                onClose={() => {
+                  setShowPaymentProcessCard(false);
+                  handleSend("Payment processing completed!");
+                }}
+              />
+            ) : (
+              <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">
+                <input
+                  type="text"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                  placeholder="Message..."
+                  className="flex-1 bg-transparent text-white placeholder-white/70 text-xs sm:text-sm focus:outline-none"
+                />
+
+                <button
+                  onClick={sendMessage}
+                  disabled={loading}
+                  className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-linear-to-r from-blue-600 to-teal-500 text-white hover:opacity-90 disabled:opacity-50"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    className="w-3 h-3 sm:w-4 sm:h-4"
+                  >
+                    <path d="M22 2L11 13" />
+                    <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+                  </svg>
+                </button>
               </div>
             )}
           </div>
-
-          {/* Input Bar */}
-          <div className="p-4 bg-white/20 backdrop-blur-lg border-t border-white/20">
-            <div className="flex items-center gap-3 rounded-full px-4 py-3 bg-white/40">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                placeholder="Type your message..."
-                className="flex-1 bg-transparent text-[#0E3B5C] placeholder-[#0E3B5C]/50 text-sm focus:outline-none"
-              />
-              <button
-                onClick={sendMessage}
-                disabled={loading}
-                className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-linear-to-r from-[#A9D7F1] via-[#F9F4F8] to-[#F8CFF3] shadow hover:scale-105 transition disabled:opacity-50"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#0E3B5C"
-                  strokeWidth="2"
-                  className="w-4 h-4"
-                >
-                  <path d="M22 2L11 13" />
-                  <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-                </svg>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
-    </>
+    </div>
   );
+
 };
 
 export default ChatWindow;

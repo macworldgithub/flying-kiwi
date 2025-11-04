@@ -1,25 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { Banner } from "../UIComponents/Banner";
 import { Heading } from "../UIComponents/Heading";
 import { Button } from "../UIComponents/Button";
-import { PaymentModal } from "./PaymentModal";
-import { AddTokenModal } from "./AddTokenModal";
 
 export default function HomeBanner() {
-  const [showPayment, setShowPayment] = useState(false);
-  const [showTokenModal, setShowTokenModal] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-
-  const handleTokenReceived = (tokenValue: string) => {
-    console.log("Token received:", tokenValue);
-    setToken(tokenValue);
-    setShowPayment(false);
-    setTimeout(() => setShowTokenModal(true), 400);
-  };
-
   return (
     <div className="w-full">
       <Banner
@@ -31,7 +17,6 @@ export default function HomeBanner() {
           { value: "100%", label: "Reliable Coverage" },
         ]}
         buttonText="Switch to E-sim"
-        onButtonClick={() => setShowPayment(true)}
         backgroundImage="/images/banner.png"
         overlayOpacity={0.45}
         align="left"
@@ -68,18 +53,6 @@ export default function HomeBanner() {
           </div>
         </div>
       </div>
-
-      <PaymentModal
-        isOpen={showPayment}
-        onClose={() => setShowPayment(false)}
-        onTokenReceived={handleTokenReceived}
-      />
-
-      <AddTokenModal
-        isOpen={showTokenModal}
-        token={token ?? ""}
-        onClose={() => setShowTokenModal(false)}
-      />
     </div>
   );
 }
