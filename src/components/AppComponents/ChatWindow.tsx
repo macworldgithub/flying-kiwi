@@ -185,7 +185,7 @@ const ChatWindow = () => {
 
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
-    setPlanNo(plan.planNo || "PLAN001");
+    setPlanNo(String(plan.planNo || "PLAN001"));
     setShowPlans(false);
     setShowPayment(true); 
     handleSend(`I would like to select the plan: ${plan.planName}`);
@@ -340,7 +340,7 @@ const ChatWindow = () => {
           address: formData.address,
           email: formData.email,
         },
-        planNo: planNo,
+        planNo: String(planNo || ""),
         simNo: selectedSim,
       };
 
@@ -656,6 +656,7 @@ const ChatWindow = () => {
             ) : showTokenCard && paymentToken ? (
               <TokenCard
                 token={paymentToken}
+                custNo={custNo || ""}
                 onSuccess={() => {
                   setShowTokenCard(false);
                   setPaymentToken(null);
