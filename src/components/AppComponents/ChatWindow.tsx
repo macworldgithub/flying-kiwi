@@ -213,9 +213,9 @@ const ChatWindow = () => {
         ? {
           query: userMsg.text,
           session_id: sessionId,
-          brand: "prosperity-tech",
+          brand: "flying-kiwi",
         }
-        : { query: userMsg.text, brand: "prosperity-tech" };
+        : { query: userMsg.text, brand: "flying-kiwi" };
 
       const response = await fetch("/api", {
         method: "POST",
