@@ -48,9 +48,9 @@ const Footer = () => {
                 <div className="flex flex-col">
                     <Heading title="Quick Links" level={6} className="text-black mb-4" />
                     <div className="flex flex-col gap-3">
-                        <Link href="/programs" label="Programs" className="text-gray-700 hover:text-blue-600 transition-colors" />
-                        <Link href="/plans" label="Plans" className="text-gray-700 hover:text-blue-600 transition-colors" />
-                        <Link href="/app" label="App" className="text-gray-700 hover:text-blue-600 transition-colors" />
+                        <Link href="/Program" label="Programs" className="text-gray-700 hover:text-blue-600 transition-colors" />
+                        <Link href="/about" label="About" className="text-gray-700 hover:text-blue-600 transition-colors" />
+                        <Link href="/Contact" label="Contact" className="text-gray-700 hover:text-blue-600 transition-colors" />
                         <Link href="/support" label="Support" className="text-gray-700 hover:text-blue-600 transition-colors" />
                     </div>
                 </div>

@@ -20,7 +20,7 @@ export const ProgramBanner: React.FC = () => {
           "
         >
           <Heading
-            title="Get in Touch"
+            title="Our Programs"
             align="left"
             level={2}
             className="text-white mb-4 sm:mb-6 md:mb-8"
@@ -37,8 +37,8 @@ export const ProgramBanner: React.FC = () => {
             "
           >
             <p>
-              Have questions about Flying Kiwi Service or our
-              <br /> programs? We'dlove to hear from you
+              Comprehensive programs designed to empower athletes with special
+              needs through fitness, competition, and community.
             </p>
           </div>
         </div>
