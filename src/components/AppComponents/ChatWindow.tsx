@@ -332,7 +332,7 @@ const ChatWindow = () => {
   const handleActivateOrder = async () => {
     try {
       const body = {
-        number: "", 
+        number: selectedSim, 
         cust: {
           custNo: custNo,
           suburb: formData.suburb,
