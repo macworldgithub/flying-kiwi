@@ -14,24 +14,23 @@ export default function ProgramContent2() {
         {/* RIGHT CONTENT - Strong Hearts */}
         <div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Strong Hearts Program
+            Flying Kiwi Cup
           </h2>
           <p className="text-sm text-[#13AFF0] mb-4 ">
-            📍 Northside Indoor Sports
+            📍 Various Competition Venues
           </p>
           <p className="text-gray-600 mb-6 leading-relaxed">
-            Our cardiovascular health and strength training program designed to
-            improve life expectancy and overall fitness for athletes with
-            special needs.
+            Annual powerlifting competition celebrating the achievements of
+            athletes with special needs, fostering confidence and community.
           </p>
 
           <p className="font-semibold text-gray-900 mb-2">Key Features:</p>
           <ul className="space-y-1 text-gray-700 text-sm">
-            <li>✔ Cardiovascular exercise routines</li>
-            <li>✔ Strength and conditioning training</li>
-            <li>✔ Health monitoring and progress tracking</li>
-            <li>✔ NDIS-aligned support</li>
-            <li>✔ Qualified coaching staff</li>
+            <li>✔ Competitive powerlifting events</li>
+            <li>✔ Awards and recognition</li>
+            <li>✔ Supportive competition environment</li>
+            <li>✔ Family and community participation</li>
+            <li>✔ Annual championship event</li>
           </ul>
         </div>
       </div>
@@ -41,23 +40,23 @@ export default function ProgramContent2() {
         {/* LEFT CONTENT - Flying Kiwi Coaching */}
         <div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Flying Kiwi Coaching
+            Flying Kiwi Formal
           </h2>
           <p className="text-sm text-[#13AFF0] mb-4 ">
-            📍 Goodlife Health Clubs Chermside
+            📍 Special Event Venues
           </p>
           <p className="text-gray-600 mb-6 leading-relaxed">
-            Personalized fitness coaching providing one-on-one and group
-            training sessions tailored to individual needs and goals.
+            Annual formal social event providing athletes with the opportunity
+            to dress up, socialize, and celebrate in an inclusive environment.
           </p>
 
           <p className="font-semibold text-gray-900 mb-2">Key Features:</p>
           <ul className="space-y-1 text-gray-700 text-sm">
-            <li>✔ Personalized training plans</li>
-            <li>✔ Professional coaching support</li>
-            <li>✔ Modern gym facilities</li>
-            <li>✔ Flexible scheduling</li>
-            <li>✔ Progress assessments</li>
+            <li>✔ Elegant formal setting</li>
+            <li>✔ Music and dancing</li>
+            <li>✔ Catered dining</li>
+            <li>✔ Photo opportunities</li>
+            <li>✔ Inclusive social experience</li>
           </ul>
         </div>
 
