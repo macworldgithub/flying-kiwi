@@ -341,7 +341,7 @@ const ChatWindow = () => {
           email: formData.email,
         },
         planNo: String(planNo || ""),
-        simNo: selectedSim,
+        simNo: "",
       };
 
       console.log("Activation payload:", body);
