@@ -11,8 +11,8 @@ interface StatItem {
 }
 
 interface BannerProps {
-  title?: string;
-  paragraph?: string;
+  title?: string | React.ReactNode;
+  paragraph?: string | React.ReactNode;
   message?: string;
   buttonText?: string;
   onButtonClick?: () => void;
@@ -22,6 +22,7 @@ interface BannerProps {
   align?: "left" | "center" | "right";
   stats?: StatItem[];
   showFloatingCircles?: boolean;
+  children?: React.ReactNode;
 }
 
 export const Banner: React.FC<BannerProps> = ({
@@ -36,6 +37,7 @@ export const Banner: React.FC<BannerProps> = ({
   align = "center",
   stats,
   showFloatingCircles = false,
+  children,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -201,7 +203,7 @@ export const Banner: React.FC<BannerProps> = ({
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
               className={cn(
                 "text-white/90 font-medium drop-shadow-md max-w-[95%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%]",
-                "text-[clamp(0.8rem,1.5vw,1.1rem)] leading-relaxed"
+                "text-[clamp(0.8rem,1.5vw,1.1rem)] leading-relaxed whitespace-pre-line"
               )}
             >
               {paragraph}
@@ -246,8 +248,8 @@ export const Banner: React.FC<BannerProps> = ({
                 align === "right"
                   ? "justify-end text-right sm:items-end"
                   : align === "center"
-                    ? "justify-center text-center sm:items-center"
-                    : "justify-start text-left sm:items-start"
+                  ? "justify-center text-center sm:items-center"
+                  : "justify-start text-left sm:items-start"
               )}
             >
               {stats.map((stat, index) => (
@@ -268,6 +270,7 @@ export const Banner: React.FC<BannerProps> = ({
               ))}
             </motion.div>
           )}
+          {children}
         </div>
       </motion.div>
     </AnimatePresence>
