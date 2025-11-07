@@ -59,21 +59,21 @@ const Footer = () => {
                     <Heading title="Programs" level={6} className="text-black mb-4" />
                     <div className="flex flex-col gap-3">
                         <Link
-                            href="/strong-hearts"
+                            href=""
                             label="Strong Hearts"
                             className="text-gray-700 hover:text-blue-600 transition-colors"
                         />
                         <Link
-                            href="/flying-kiwi-cup"
+                            href=""
                             label="Flying Kiwi Cup"
                             className="text-gray-700 hover:text-blue-600 transition-colors"
                         />
                         <Link
-                            href="/coaching"
+                            href=""
                             label="Coaching"
                             className="text-gray-700 hover:text-blue-600 transition-colors"
                         />
-                        <Link href="/events" label="Events" className="text-gray-700" />
+                        <Link href="" label="Events" className="text-gray-700" />
                     </div>
                 </div>
 
