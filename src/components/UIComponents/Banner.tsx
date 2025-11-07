@@ -1,7 +1,7 @@
 "use client";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { X } from "lucide-react";
-import React, { useRef, useMemo } from "react";
+import React, { useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./Button";
 
@@ -23,6 +23,9 @@ interface BannerProps {
   stats?: StatItem[];
   showFloatingCircles?: boolean;
   children?: React.ReactNode;
+
+  width?: string;
+  height?: string;
 }
 
 export const Banner: React.FC<BannerProps> = ({
@@ -38,6 +41,8 @@ export const Banner: React.FC<BannerProps> = ({
   stats,
   showFloatingCircles = false,
   children,
+  width,
+  height,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -56,9 +61,14 @@ export const Banner: React.FC<BannerProps> = ({
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className={cn(
-          "relative w-full min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] lg:min-h-[90vh] flex flex-col justify-center overflow-hidden shadow-lg",
+          "relative flex flex-col justify-center overflow-hidden shadow-lg",
           alignmentClasses[align]
         )}
+        style={{
+          width: width || "100%",
+          height: height || "auto", // ✅ Explicit height support
+          minHeight: height ? "unset" : "clamp(60vh, 75vh, 90vh)", // ✅ Avoid double-height stacking
+        }}
       >
         {/* Background */}
         {backgroundImage && (
@@ -168,7 +178,7 @@ export const Banner: React.FC<BannerProps> = ({
         {/* Content */}
         <div
           className={cn(
-            "relative z-10 flex flex-col gap-4 p-20 lg:p-[10rem] px-4 sm:px-8 lg:px-20 xl:px-28 text-white max-w-[1400px] w-full",
+            "relative z-10 flex flex-col gap-4 p-10 sm:p-14 md:p-20 lg:p-28 xl:p-32 text-white max-w-[1400px] w-full",
             alignmentClasses[align]
           )}
         >
