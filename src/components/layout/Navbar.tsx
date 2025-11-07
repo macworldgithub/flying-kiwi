@@ -8,10 +8,10 @@ import { Button } from "../UIComponents/Button";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "Program", href: "/program" },
+  { label: "Program", href: "/Program" },
   { label: "Switch to Support", href: "/support" },
   { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
+  { label: "Contact", href: "/Contact" },
 ];
 
 export const Navbar: React.FC = () => {
