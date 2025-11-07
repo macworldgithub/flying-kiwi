@@ -10,6 +10,7 @@ export const ContactUs: React.FC = () => {
         backgroundImage="/images/contact.png"
         overlayOpacity={0.55}
         align="left"
+        height="70vh"
       >
         {/* Content Overlay */}
         <div

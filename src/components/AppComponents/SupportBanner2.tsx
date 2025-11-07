@@ -23,13 +23,13 @@ const SupportBanner2 = () => {
             Switch to E-sim Now
           </Button>
 
-          <button
-            onClick={() => alert("Support with Chat clicked!")}
-            className="px-6 py-3 rounded-md text-white font-semibold shadow-md hover:opacity-90 transition-all duration-200"
-            style={{ backgroundColor: "#EB0FB6" }}
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => alert("Switch to E-sim clicked!")}
           >
             Support with Chat
-          </button>
+          </Button>
         </div>
       </Banner>
     </div>

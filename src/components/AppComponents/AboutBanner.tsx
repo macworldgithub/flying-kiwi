@@ -10,6 +10,7 @@ export const AboutBanner: React.FC = () => {
         backgroundImage="/images/about.png"
         overlayOpacity={0.55}
         align="left"
+        height="50vh"
       >
         {/* Content Overlay */}
         <div
@@ -40,17 +41,6 @@ export const AboutBanner: React.FC = () => {
               A charity dedicated to empowering athletes with special needs
               through accessible fitness, health programs, and community
               support.
-            </p>
-            <p>
-              Over the years, we've developed programs like Strong Hearts for
-              cardiovascular health, Flying Kiwi Coaching for personalized
-              fitness, the Flying Kiwi Cup competition, and the annual Flying
-              Kiwi Formal.
-            </p>
-            <p>
-              Our programs are NDIS-aligned, supported by qualified coaches, and
-              operate at facilities such as Northside Indoor Sports and Goodlife
-              Chermside.
             </p>
           </div>
         </div>
