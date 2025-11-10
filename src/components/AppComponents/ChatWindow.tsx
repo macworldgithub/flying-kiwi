@@ -611,7 +611,7 @@ const ChatWindow = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-3 sm:mt-4 w-full bg-linear-to-r from-blue-600 to-teal-500 text-white text-white py-1.5 sm:py-2 rounded hover:opacity-90 text-xs sm:text-sm"
+                  className="mt-3 sm:mt-4 w-full bg-linear-to-r from-blue-600 to-teal-500 text-white py-1.5 sm:py-2 rounded hover:opacity-90 text-xs sm:text-sm"
                 >
                   Submit Details
                 </button>
@@ -623,7 +623,7 @@ const ChatWindow = () => {
                     key={index}
                     onClick={() => handleNumberSelect(num)}
                     disabled={loading}
-                    className="bg-linear-to-r from-blue-600 to-teal-500 text-white text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
+                    className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
                   >
                     {num}
                   </button>
@@ -635,7 +635,7 @@ const ChatWindow = () => {
                   <button
                     key={index}
                     onClick={() => handlePlanSelect(plan)}
-                    className="bg-linear-to-r from-blue-600 to-teal-500 text-white text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
+                    className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
                   >
                     {plan.planName} - ${plan.price}
                   </button>

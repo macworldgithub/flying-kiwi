@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Link } from "../UIComponents/Link";
 import { Button } from "../UIComponents/Button";
+import { useRouter } from "next/navigation";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -16,6 +17,11 @@ const NAV_LINKS = [
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+
+  const handleSwitchToEsim = () => {
+    router.push("/chat-window");
+  };
 
   return (
     <header className="fixed top-0 left-0 z-50 w-full border-b border-gray-200 bg-white/70 backdrop-blur-md">
@@ -45,7 +51,7 @@ export const Navbar: React.FC = () => {
         </nav>
 
         <div className="hidden md:block">
-          <Button variant="gradient" size="md">
+          <Button variant="gradient" size="md" onClick={handleSwitchToEsim}>
             Switch to E-sim
           </Button>
         </div>

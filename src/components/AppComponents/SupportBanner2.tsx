@@ -2,8 +2,14 @@
 
 import { Banner } from "../UIComponents/Banner";
 import { Button } from "../UIComponents/Button";
+import { useRouter } from "next/navigation";
 
 const SupportBanner2 = () => {
+  const router = useRouter();
+  const handleSwitchToEsim = () => {
+    router.push("/chat-window");
+  };
+
   return (
     <div className="w-full">
       <Banner
@@ -15,18 +21,14 @@ const SupportBanner2 = () => {
       >
         {/* ✅ Buttons Section */}
         <div className="flex flex-col sm:flex-row gap-4 mt-6 justify-center">
-          <Button
-            variant="gradient"
-            size="lg"
-            onClick={() => alert("Switch to E-sim clicked!")}
-          >
+          {/* <Button variant="gradient" size="lg" onClick={handleSwitchToEsim}>
             Switch to E-sim Now
-          </Button>
+          </Button> */}
 
           <Button
             variant="outline"
             size="lg"
-            onClick={() => alert("Switch to E-sim clicked!")}
+            onClick={handleSwitchToEsim}
           >
             Support with Chat
           </Button>

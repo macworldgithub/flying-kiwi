@@ -21,32 +21,39 @@ const OurPrograms = () => {
 
   const programs = [
     {
-      backgroundImage: "/images/card-image.png",
+      backgroundImage: "/images/Card1.png",
       title: "Strong Hearts Program",
       paragraph:
         "Cardiovascular health through specialized fitness training at Northside Indoor Sports.",
-      buttonText: "Learn More",
+      // buttonText: "Learn More",
     },
     {
-      backgroundImage: "/images/card-image.png",
+      backgroundImage: "/images/Card2.png",
       title: "Active Minds",
       paragraph:
         "Boost mental wellness through yoga, mindfulness, and group activities.",
-      buttonText: "Discover",
+      // buttonText: "Discover",
     },
     {
-      backgroundImage: "/images/card-image.png",
+      backgroundImage: "/images/Card3.png",
       title: "Team Inclusion",
       paragraph:
         "Inclusive sports teams for all abilities, promoting teamwork and friendship.",
-      buttonText: "Join Now",
+      // buttonText: "Join Now",
     },
     {
-      backgroundImage: "/images/card-image.png",
+      backgroundImage: "/images/Card4.png",
       title: "Adaptive Sports",
       paragraph:
         "Empowering athletes with disabilities through specialized coaching and adaptive gear.",
-      buttonText: "Explore",
+      // buttonText: "Explore",
+    },
+    {
+      backgroundImage: "/images/Card6.png",
+      title: "Rehab & Recovery",
+      paragraph:
+        "Supporting athletes’ safe return to activity through guided rehabilitation sessions and personalized recovery plans.",
+      // buttonText: "Start Now",
     },
   ];
 
