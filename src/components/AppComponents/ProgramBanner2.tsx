@@ -24,18 +24,9 @@ const SupportBanner2 = () => {
       >
         {/* ✅ Buttons Section */}
         <div className="flex flex-col sm:flex-row gap-4 mt-6 justify-center">
-          {/* <Button variant="gradient" size="lg" onClick={handleSwitchToEsim}>
-            Switch to E-sim Now
-          </Button> */}
-
-          <button
-            // onClick={() => alert("Support with Chat clicked!")}
-            className="px-6 py-3 rounded-md text-white font-semibold shadow-md hover:opacity-90 transition-all duration-200"
-            style={{ backgroundColor: "#EB0FB6" }}
-            onClick={handleSwitchToEsim}
-          >
-            Support with Chat
-          </button>
+          <Button variant="gradient" size="lg" onClick={handleSwitchToEsim}>
+             Support with Chat
+          </Button>
         </div>
       </Banner>
     </div>

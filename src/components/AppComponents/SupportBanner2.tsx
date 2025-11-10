@@ -26,7 +26,7 @@ const SupportBanner2 = () => {
           </Button> */}
 
           <Button
-            variant="outline"
+            variant="gradient"
             size="lg"
             onClick={handleSwitchToEsim}
           >
