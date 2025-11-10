@@ -14,7 +14,7 @@ export default function HomeBanner() {
   };
 
   const handleMoreAboutUs = () => {
-    router.push("/about");
+    router.push("/About");
   };
 
   return (
