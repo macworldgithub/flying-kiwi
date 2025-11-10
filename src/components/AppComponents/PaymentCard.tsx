@@ -41,19 +41,19 @@ export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
         "submitBtn"
       ) as HTMLButtonElement;
       const form = document.getElementById("payment-form") as HTMLFormElement;
-
       window.QuickstreamAPI.creditCards.createTrustedFrame(
         {
           config: { supplierBusinessCode: "TIABREST" },
           iframe: {
             width: "100%",
-            scrolling: "no",
+            height: window.innerWidth < 500 ? "420px" : "350px",
+            scrolling: "yes",
             style: { border: "none", background: "#fff", borderRadius: "12px" },
           },
           fieldStyles: {
             base: {
               fontSize: "18px",
-              padding: "10px 12px",
+              padding: "10px 2px",
               color: "#111",
               fontFamily: "Inter, sans-serif",
               "::placeholder": { color: "#9ca3af" },
@@ -113,7 +113,7 @@ export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
           type="submit"
           id="submitBtn"
           disabled
-          className="w-full bg-linear-to-r from-blue-600 to-teal-500 text-white py-2 rounded-lg"
+          className="w-full bg-linear-to-r from-blue-600 to-teal-500 text-white py-2 rounded-lg mt-6"
         >
           Submit
         </button>
