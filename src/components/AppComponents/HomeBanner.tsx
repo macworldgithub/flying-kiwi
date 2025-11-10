@@ -4,8 +4,19 @@ import Image from "next/image";
 import { Banner } from "../UIComponents/Banner";
 import { Heading } from "../UIComponents/Heading";
 import { Button } from "../UIComponents/Button";
+import { useRouter } from "next/navigation";
 
 export default function HomeBanner() {
+  const router = useRouter();
+
+  const handleSwitchToEsim = () => {
+    router.push("/chat-window");
+  };
+
+  const handleMoreAboutUs = () => {
+    router.push("/about");
+  };
+
   return (
     <div className="w-full">
       <Banner
@@ -20,6 +31,7 @@ export default function HomeBanner() {
         backgroundImage="/images/banner.png"
         overlayOpacity={0.45}
         align="left"
+        onButtonClick={handleSwitchToEsim}
       />
 
       <div className="relative bg-white overflow-hidden -mt-px">
@@ -32,11 +44,7 @@ export default function HomeBanner() {
               mentorship.
             </p>
 
-            <Button
-              variant="gradient"
-              size="md"
-              onClick={() => alert("More About us clicked!")}
-            >
+            <Button variant="gradient" size="md" onClick={handleMoreAboutUs}>
               More About Us
             </Button>
           </div>
