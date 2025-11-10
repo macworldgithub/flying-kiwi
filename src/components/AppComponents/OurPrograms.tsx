@@ -99,7 +99,7 @@ const OurPrograms = () => {
               backgroundImage={program.backgroundImage}
               title={program.title}
               paragraph={program.paragraph}
-              buttonText={program.buttonText}
+              // buttonText={program.buttonText}
               onButtonClick={() => console.log(`${program.title} clicked!`)}
               className="w-[90vw] sm:w-[320px] md:w-[360px] lg:w-[387px] h-[480px] md:h-[503px]"
             />
