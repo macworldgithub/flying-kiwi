@@ -27,7 +27,7 @@ export default function Features() {
               variant="gradient"
               size="lg"
             >
-              Get your e-SIM
+              Get your E-sim
             </Button>
           </div>
 
