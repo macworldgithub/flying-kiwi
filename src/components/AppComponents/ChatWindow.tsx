@@ -1,9 +1,18 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PaymentProcessCard } from "./PaymentProcessCard";
 import { TokenCard } from "./TokenCard";
 import { PaymentCard } from "./PaymentCard";
+import { useRouter, useSearchParams } from "next/navigation";
 
+interface Plan {
+  _id: string;
+  planNo: number;
+  planName: string;
+  price: number;
+  network: string;
+  isActive: boolean;
+}
 const ChatWindow = () => {
   const [chat, setChat] = useState<
     { id: number; type: "user" | "bot"; text: string; time: string }[]
@@ -11,15 +20,15 @@ const ChatWindow = () => {
     {
       id: 1,
       type: "bot",
-      text: "Hi there, I would be glad to help. How can I help?",
+      text: "Hi there, I would be glad to help. Tap signup to get started.",
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
     },
   ]);
-
-  const [plans, setPlans] = useState<any[]>([]); 
+  const router = useRouter();
+  const [plans, setPlans] = useState<any[]>([]);
   const [showPlans, setShowPlans] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,15 +37,43 @@ const ChatWindow = () => {
   const [showNumberButtons, setShowNumberButtons] = useState(false);
   const [numberOptions, setNumberOptions] = useState<string[]>([]);
   const [showPayment, setShowPayment] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  console.log(selectedPlan, "SelectedPlan");
   const [showTokenCard, setShowTokenCard] = useState(false);
   const [paymentToken, setPaymentToken] = useState<string | null>(null);
   const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
 
-
   const [custNo, setCustNo] = useState<string | null>(null);
   const [planNo, setPlanNo] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const fetchPlansAndCheckQuery = async () => {
+      try {
+        const res = await fetch("https://bele.omnisuiteai.com/api/v1/plans");
+        const data = await res.json();
+        const plansList: Plan[] = data.data || [];
+        setPlans(plansList);
+
+        const planParam = searchParams.get("plan");
+        if (planParam) {
+          const preselected = plansList.find((p) => p.planName === planParam);
+          if (preselected) {
+            setSelectedPlan(preselected);
+            handleSend(
+              `You've selected the ${preselected.planName} plan. Tap signup if you want to continue.`
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching plans:", err);
+      }
+    };
+
+    fetchPlansAndCheckQuery();
+  }, [searchParams]);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -187,7 +224,7 @@ const ChatWindow = () => {
     setSelectedPlan(plan);
     setPlanNo(String(plan.planNo || "PLAN001"));
     setShowPlans(false);
-    setShowPayment(true); 
+    setShowPayment(true);
     handleSend(`I would like to select the plan: ${plan.planName}`);
   };
 
@@ -211,10 +248,10 @@ const ChatWindow = () => {
     try {
       const payload = sessionId
         ? {
-          query: userMsg.text,
-          session_id: sessionId,
-          brand: "flying-kiwi",
-        }
+            query: userMsg.text,
+            session_id: sessionId,
+            brand: "flying-kiwi",
+          }
         : { query: userMsg.text, brand: "flying-kiwi" };
 
       const response = await fetch("/api", {
@@ -273,28 +310,26 @@ const ChatWindow = () => {
         setNumberOptions(numbers);
         setShowNumberButtons(true);
 
-        try {
-          const plansResponse = await fetch(
-            "https://bele.omnisuiteai.com/api/v1/plans",
-            {
-              method: "GET",
-              headers: {
-                accept: "application/json",
-              },
-            }
-          );
+        if (!selectedPlan) {
+          try {
+            const plansResponse = await fetch(
+              "https://bele.omnisuiteai.com/api/v1/plans",
+              {
+                method: "GET",
+                headers: { accept: "application/json" },
+              }
+            );
 
-          if (!plansResponse.ok) {
-            throw new Error("Failed to fetch plans");
+            if (!plansResponse.ok) throw new Error("Failed to fetch plans");
+
+            const plansData = await plansResponse.json();
+            setPlans(plansData.data || []);
+            setShowPlans(true);
+          } catch (plansError) {
+            console.error("Error fetching plans:", plansError);
+            setPlans([]);
+            setShowPlans(true);
           }
-
-          const plansData = await plansResponse.json();
-          setPlans(plansData.data || []);
-          setShowPlans(true);
-        } catch (plansError) {
-          console.error("Error fetching plans:", plansError);
-          setPlans([]);
-          setShowPlans(true);
         }
       }
     } catch (error: any) {
@@ -327,12 +362,17 @@ const ChatWindow = () => {
     setSelectedSim(number);
     setShowNumberButtons(false);
     handleSend(number);
+    if (selectedPlan) {
+      setShowPayment(true); // proceed to payment if plan already selected
+    } else {
+      setShowPlans(true); // otherwise show plan options
+    }
   };
 
   const handleActivateOrder = async () => {
     try {
       const body = {
-        number: selectedSim, 
+        number: selectedSim,
         cust: {
           custNo: custNo,
           suburb: formData.suburb,
@@ -340,17 +380,20 @@ const ChatWindow = () => {
           address: formData.address,
           email: formData.email,
         },
-        planNo: String(planNo || ""),
+        planNo: String(selectedPlan?.planNo) || "",
         simNo: "",
       };
 
       console.log("Activation payload:", body);
 
-      const response = await fetch("https://bele.omnisuiteai.com/api/v1/orders/activate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const response = await fetch(
+        "https://bele.omnisuiteai.com/api/v1/orders/activate",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
 
       const result = await response.json();
       console.log("Activation result:", result);
@@ -365,7 +408,6 @@ const ChatWindow = () => {
       handleSend("Order activation failed. Please try again.");
     }
   };
-
 
   const sendMessage = () => {
     handleSend(message);
@@ -383,15 +425,23 @@ const ChatWindow = () => {
       {/* Chat window container */}
       <div className="relative z-10 w-full max-w-3xl mx-auto h-[90vh] sm:h-[85vh] md:h-[80vh] lg:h-[75vh] bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
+
         <div className="flex justify-between items-center p-3 sm:p-4 bg-linear-to-r from-[#A9D7F1] via-[#F9F4F8] to-[#F8CFF3] shadow-md">
           <div className="flex items-center gap-2">
             <img
               src="/images/logo.png"
               alt="Logo"
-              className="h-8 sm:h-10 w-auto drop-shadow-md"
+              className="hidden sm:block h-8 sm:h-10 w-auto drop-shadow-md"
             />
           </div>
         </div>
+
+        <button
+          onClick={() => router.push("/")}
+          className="text-white text-lg sm:text-xl font-bold hover:text-gray-200 transition-colors"
+        >
+          ×
+        </button>
 
         {/* Chat body */}
         <div className="flex-1 flex flex-col bg-linear-to-b from-[#A9D7F1]/30 via-[#F9F4F8]/40 to-[#F8CFF3]/30 px-3 sm:px-6 py-4 sm:py-6 overflow-y-auto scroll-smooth">
@@ -401,11 +451,19 @@ const ChatWindow = () => {
             </h2>
           </div>
 
+          {selectedPlan && (
+            <div className="mb-4 bg-white/20 border border-white/30 text-white text-center text-sm sm:text-base px-3 py-2 rounded-md shadow-md">
+              You selected <strong>{selectedPlan.planName}</strong> — $
+              {selectedPlan.price}. Let’s continue with your setup.
+            </div>
+          )}
+
           {chat.map((msg) => (
             <div
               key={msg.id}
-              className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
+              className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
+                msg.type === "user" ? "justify-end" : "justify-start"
+              }`}
             >
               {msg.type === "bot" && (
                 <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -418,10 +476,11 @@ const ChatWindow = () => {
               )}
 
               <div
-                className={`${msg.type === "user"
-                  ? "bg-white text-[#0E3B5C]"
-                  : "bg-white text-[#0E3B5C]"
-                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                className={`${
+                  msg.type === "user"
+                    ? "bg-white text-[#0E3B5C]"
+                    : "bg-white text-[#0E3B5C]"
+                } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
               >
                 <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                   {msg.text}
@@ -616,7 +675,7 @@ const ChatWindow = () => {
                   Submit Details
                 </button>
               </form>
-            ) : showNumberButtons ? (
+            ) : showNumberButtons && numberOptions.length > 0 ? (
               <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
                 {numberOptions.map((num, index) => (
                   <button
@@ -629,7 +688,7 @@ const ChatWindow = () => {
                   </button>
                 ))}
               </div>
-            ) : showPlans ? (
+            ) : showPlans && !selectedPlan && plans.length > 0 ? (
               <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
                 {plans.map((plan, index) => (
                   <button
@@ -650,7 +709,7 @@ const ChatWindow = () => {
                   handleSend(
                     `Payment completed for plan ${selectedPlan.planName} with token: ${token}`
                   );
-                  setSelectedPlan(null);
+                  // setSelectedPlan(null);
                 }}
               />
             ) : showTokenCard && paymentToken ? (
@@ -707,7 +766,6 @@ const ChatWindow = () => {
       </div>
     </div>
   );
-
 };
 
 export default ChatWindow;
