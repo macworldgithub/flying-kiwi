@@ -10,9 +10,8 @@ export default function HomeBanner() {
   const router = useRouter();
 
   const handleSwitchToEsim = () => {
-    router.push("/chat-window");
+    router.push("/chat-window?fromBanner=true");
   };
-
   const handleMoreAboutUs = () => {
     router.push("/About");
   };

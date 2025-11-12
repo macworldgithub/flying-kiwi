@@ -15,7 +15,7 @@ export default function Features() {
             </h3>
             <ul className="space-y-3 text-gray-700 mb-4">
               <li> Choose Your Plan</li>
-              <li> Switch Your SIM</li>
+              <li> Switch Your Sim</li>
               <li> Activate Service</li>
               <li> Make an Impact</li>
             </ul>
@@ -23,10 +23,7 @@ export default function Features() {
               Just have your ID ready, and existing customer number, if you are
               transfering your number and let’s go!
             </p>
-            <Button
-              variant="gradient"
-              size="lg"
-            >
+            <Button variant="gradient" size="lg">
               Get your E-sim
             </Button>
           </div>
