@@ -20,7 +20,7 @@ export const Navbar: React.FC = () => {
   const router = useRouter();
 
   const handleSwitchToEsim = () => {
-    router.push("/chat-window");
+    router.push("/chat-window?fromBanner=true");
   };
 
   return (

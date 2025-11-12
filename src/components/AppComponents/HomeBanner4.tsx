@@ -6,7 +6,7 @@ const HomeBanner4 = () => {
   const router = useRouter();
 
   const handleSwitchToEsim = () => {
-    router.push("/chat-window");
+    router.push("/chat-window?fromBanner=true");
   };
   return (
     <div className="w-full">

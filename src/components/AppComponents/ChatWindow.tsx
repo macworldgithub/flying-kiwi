@@ -33,6 +33,21 @@ const ChatWindow = () => {
   const [paymentId, setPaymentId] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
+  const fromBanner = searchParams.get("fromBanner");
+  useEffect(() => {
+    if (fromBanner) {
+      const initialBotMsg = {
+        id: 1,
+        type: "bot" as const,
+        text: "Let me help you switch to an E-sim and ask you to fill out the form below.",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+      setChat([initialBotMsg]);
+    }
+  }, [fromBanner]);
 
   useEffect(() => {
     const fetchPlansAndCheckQuery = async () => {
