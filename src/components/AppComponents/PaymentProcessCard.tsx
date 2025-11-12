@@ -4,13 +4,19 @@ import { useState } from "react";
 
 interface PaymentProcessCardProps {
   onClose: () => void;
+  defaultCustNo?: string;
+  defaultPaymentId?: string;
 }
 
-export const PaymentProcessCard = ({ onClose }: PaymentProcessCardProps) => {
+export const PaymentProcessCard = ({
+  onClose,
+  defaultCustNo = "",
+  defaultPaymentId = "",
+}: PaymentProcessCardProps) => {
   const [formData, setFormData] = useState({
-    custNo: "",
+    custNo: defaultCustNo,
     amount: "",
-    paymentId: "",
+    paymentId: defaultPaymentId,
     email: "",
     comment: "",
   });
@@ -42,7 +48,7 @@ export const PaymentProcessCard = ({ onClose }: PaymentProcessCardProps) => {
       alert("Payment processed successfully!");
       onClose();
     } catch (error: any) {
-      setMessage("Payment failed " + (error.message || "Something went wrong"));
+      setMessage("❌ " + (error.message || "Something went wrong"));
     } finally {
       setLoading(false);
     }

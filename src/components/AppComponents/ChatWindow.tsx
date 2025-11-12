@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { PaymentProcessCard } from "./PaymentProcessCard";
-import { TokenCard } from "./TokenCard";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -16,17 +15,7 @@ interface Plan {
 const ChatWindow = () => {
   const [chat, setChat] = useState<
     { id: number; type: "user" | "bot"; text: string; time: string }[]
-  >([
-    {
-      id: 1,
-      type: "bot",
-      text: "Hi there, I would be glad to help. Tap signup to get started.",
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    },
-  ]);
+  >([]);
   const router = useRouter();
   const [plans, setPlans] = useState<any[]>([]);
   const [showPlans, setShowPlans] = useState(false);
@@ -38,14 +27,10 @@ const ChatWindow = () => {
   const [numberOptions, setNumberOptions] = useState<string[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  console.log(selectedPlan, "SelectedPlan");
-  const [showTokenCard, setShowTokenCard] = useState(false);
-  const [paymentToken, setPaymentToken] = useState<string | null>(null);
   const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
-
   const [custNo, setCustNo] = useState<string | null>(null);
-  const [planNo, setPlanNo] = useState<string | null>(null);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
 
@@ -62,10 +47,12 @@ const ChatWindow = () => {
           const preselected = plansList.find((p) => p.planName === planParam);
           if (preselected) {
             setSelectedPlan(preselected);
-            handleSend(
-              `You've selected the ${preselected.planName} plan. Tap signup if you want to continue.`
-            );
+            setShowDetailsForm(true);
+          } else {
+            setShowDetailsForm(true);
           }
+        } else {
+          setShowDetailsForm(true);
         }
       } catch (err) {
         console.error("Error fetching plans:", err);
@@ -222,10 +209,41 @@ const ChatWindow = () => {
 
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
-    setPlanNo(String(plan.planNo || "PLAN001"));
     setShowPlans(false);
     setShowPayment(true);
     handleSend(`I would like to select the plan: ${plan.planName}`);
+  };
+
+  const sendToAPI = async (text: string) => {
+    if (!text.trim()) return null;
+
+    const payload = sessionId
+      ? { query: text, session_id: sessionId, brand: "flying-kiwi" }
+      : { query: text, brand: "flying-kiwi" };
+
+    try {
+      const response = await fetch("/api", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+
+      // Save session id if needed
+      if (!sessionId && data.session_id) setSessionId(data.session_id);
+      if (data?.custNo) setCustNo(data.custNo);
+
+      return data;
+    } catch (error) {
+      console.error("API call error:", error);
+      return null;
+    }
   };
 
   const handleSend = async (msgText: string) => {
@@ -267,7 +285,8 @@ const ChatWindow = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = await sendToAPI(userMsg.text);
+      if (!data) throw new Error("No data from API");
       console.log("API Response:", data);
 
       if (!sessionId && data.session_id) {
@@ -277,17 +296,23 @@ const ChatWindow = () => {
       const botText =
         data?.message || data?.response || "Sorry, I couldn’t understand that.";
 
-      const botMsg = {
-        id: chat.length + 2,
-        type: "bot" as const,
-        text: botText,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
+      const isPlanConfirmation =
+        botText.toLowerCase().includes("i’ve noted your interest") ||
+        botText.toLowerCase().includes("customer id") ||
+        botText.toLowerCase().includes("your account is set up");
 
-      setChat((prev) => [...prev, botMsg]);
+      if (!isPlanConfirmation && !isNumberSelection(botText)) {
+        const botMsg = {
+          id: chat.length + 2,
+          type: "bot" as const,
+          text: botText,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+        setChat((prev) => [...prev, botMsg]);
+      }
 
       if (data?.custNo) setCustNo(data.custNo);
 
@@ -309,6 +334,16 @@ const ChatWindow = () => {
         const numbers = extractNumbers(botText);
         setNumberOptions(numbers);
         setShowNumberButtons(true);
+        const botMsg = {
+          id: chat.length + 2,
+          type: "bot" as const,
+          text: "Choose from the numbers below:",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+        setChat((prev) => [...prev, botMsg]);
 
         if (!selectedPlan) {
           try {
@@ -361,11 +396,28 @@ const ChatWindow = () => {
   const handleNumberSelect = async (number: string) => {
     setSelectedSim(number);
     setShowNumberButtons(false);
-    handleSend(number);
+
+    // Call API but do NOT show bot response
+    await sendToAPI(number);
+
+    // Now manually add the next bot message for your UI flow
+    const botMsg = {
+      id: chat.length + 2,
+      type: "bot" as const,
+      text: selectedPlan
+        ? "Perfect! Let’s continue with the payment."
+        : "Choose from the Plans below:",
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+    setChat((prev) => [...prev, botMsg]);
+
     if (selectedPlan) {
-      setShowPayment(true); // proceed to payment if plan already selected
+      setShowPayment(true);
     } else {
-      setShowPlans(true); // otherwise show plan options
+      setShowPlans(true);
     }
   };
 
@@ -423,7 +475,7 @@ const ChatWindow = () => {
       <div className="absolute inset-0 bg-linear-to-br from-[#0E3B5C]/80 via-[#05263D]/90 to-[#000000]/85 backdrop-blur-md" />
 
       {/* Chat window container */}
-      <div className="relative z-10 w-full max-w-3xl mx-auto h-[90vh] sm:h-[85vh] md:h-[80vh] lg:h-[75vh] bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="relative z-10 w-full max-w-3xl mx-auto  bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
 
         <div className="flex justify-between items-center p-3 sm:p-4 bg-linear-to-r from-[#A9D7F1] via-[#F9F4F8] to-[#F8CFF3] shadow-md">
@@ -434,19 +486,18 @@ const ChatWindow = () => {
               className="hidden sm:block h-8 sm:h-10 w-auto drop-shadow-md"
             />
           </div>
+          <button
+            onClick={() => router.push("/")}
+            className="text-lg sm:text-xl font-bold hover:text-gray-600 transition-colors"
+          >
+            ×
+          </button>
         </div>
 
-        <button
-          onClick={() => router.push("/")}
-          className="text-white text-lg sm:text-xl font-bold hover:text-gray-200 transition-colors"
-        >
-          ×
-        </button>
-
         {/* Chat body */}
-        <div className="flex-1 flex flex-col bg-linear-to-b from-[#A9D7F1]/30 via-[#F9F4F8]/40 to-[#F8CFF3]/30 px-3 sm:px-6 py-4 sm:py-6 overflow-y-auto scroll-smooth">
+        <div className="flex flex-col bg-linear-to-b from-[#A9D7F1]/30 via-[#F9F4F8]/40 to-[#F8CFF3]/30 px-3 sm:px-6 py-4 sm:py-6 overflow-y-auto scroll-smooth">
           <div className="text-center mb-4 sm:mb-6 mt-2 sm:mt-4">
-            <h2 className="text-[#0E3B5C] font-semibold text-base sm:text-lg mb-1 drop-shadow-sm">
+            <h2 className="text-[#ffffff] font-semibold text-base sm:text-lg mb-1 drop-shadow-sm">
               How can I help you today?
             </h2>
           </div>
@@ -702,25 +753,15 @@ const ChatWindow = () => {
               </div>
             ) : showPayment && selectedPlan ? (
               <PaymentCard
-                onTokenReceived={(token) => {
-                  setPaymentToken(token);
-                  setShowPayment(false);
-                  setShowTokenCard(true);
-                  handleSend(
-                    `Payment completed for plan ${selectedPlan.planName} with token: ${token}`
-                  );
-                  // setSelectedPlan(null);
-                }}
-              />
-            ) : showTokenCard && paymentToken ? (
-              <TokenCard
-                token={paymentToken}
                 custNo={custNo || ""}
-                onSuccess={() => {
-                  setShowTokenCard(false);
-                  setPaymentToken(null);
-                  handleSend("Payment method successfully added!");
+                planName={selectedPlan.planName}
+                onPaymentProcessed={(paymentId) => {
+                  setPaymentId(paymentId);
+                  setShowPayment(false);
                   setShowPaymentProcessCard(true);
+                  handleSend(
+                    `Payment completed for plan ${selectedPlan.planName}`
+                  );
                 }}
               />
             ) : showPaymentProcessCard ? (
@@ -730,6 +771,8 @@ const ChatWindow = () => {
                   handleSend("Payment processing completed!");
                   handleActivateOrder();
                 }}
+                defaultCustNo={custNo || ""}
+                defaultPaymentId={paymentId || ""}
               />
             ) : (
               <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">

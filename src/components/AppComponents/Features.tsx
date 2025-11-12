@@ -23,10 +23,7 @@ export default function Features() {
               Just have your ID ready, and existing customer number, if you are
               transfering your number and let’s go!
             </p>
-            <Button
-              variant="gradient"
-              size="lg"
-            >
+            <Button variant="gradient" size="lg">
               Get your E-sim
             </Button>
           </div>
