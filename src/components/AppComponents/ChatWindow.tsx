@@ -43,6 +43,7 @@ const ChatWindow = () => {
         }),
       };
       setChat([initialBotMsg]);
+      setShowDetailsForm(true);
     }
   }, [fromBanner]);
 
@@ -59,12 +60,8 @@ const ChatWindow = () => {
           const preselected = plansList.find((p) => p.planName === planParam);
           if (preselected) {
             setSelectedPlan(preselected);
-            setShowDetailsForm(true);
-          } else {
-            setShowDetailsForm(true);
+            setShowDetailsForm(true); 
           }
-        } else {
-          setShowDetailsForm(true);
         }
       } catch (err) {
         console.error("Error fetching plans:", err);
