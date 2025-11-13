@@ -4,13 +4,15 @@ import { useEffect, useState } from "react";
 interface PaymentCardProps {
   custNo: string;
   planName: string;
-  onPaymentProcessed: (paymentId: string) => void; // returns paymentId for process card
+  planPrice?: number; // Optional: Pass plan price directly for clarity
+  onPaymentComplete: (success: boolean, message: string) => void;
 }
 
 export const PaymentCard = ({
   custNo,
   planName,
-  onPaymentProcessed,
+  planPrice,
+  onPaymentComplete,
 }: PaymentCardProps) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -103,8 +105,8 @@ export const PaymentCard = ({
             const token = data?.singleUseToken?.singleUseTokenId;
             if (!token) throw new Error("No token returned");
 
-            // Immediately call backend to save payment method
-            const response = await fetch(
+            // ✅ Save payment method first
+            const methodResponse = await fetch(
               "https://bele.omnisuiteai.com/api/v1/payments/methods",
               {
                 method: "POST",
@@ -113,14 +115,48 @@ export const PaymentCard = ({
               }
             );
 
-            const result = await response.json();
-            if (!response.ok)
-              throw new Error(result.message || "Payment method failed");
+            const methodData = await methodResponse.json();
+            if (!methodResponse.ok)
+              throw new Error(methodData.message || "Payment method failed");
 
-            // Call parent callback with paymentId to show PaymentProcessCard
-            onPaymentProcessed(result.data.paymentId);
+            const paymentId = methodData.data.paymentId;
+
+            // ✅ Build process payload
+            const email =
+              localStorage.getItem("userEmail") || ""; // from earlier form save
+            const amount =
+              String(planPrice) || String(localStorage.getItem("planPrice") || 0);
+            const comment = `Ref-${Math.random().toString(36).substring(2, 8)}`;
+
+            const processPayload = {
+              custNo,
+              amount,
+              paymentId,
+              email,
+              comment,
+            };
+
+            // ✅ Call process API
+            const processResponse = await fetch(
+              "https://bele.omnisuiteai.com/api/v1/payments/process",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(processPayload),
+              }
+            );
+
+            const processData = await processResponse.json();
+            if (!processResponse.ok)
+              throw new Error(processData.message || "Payment failed");
+
+            setMessage("✅ Payment processed successfully!");
+            onPaymentComplete(true, "Payment successful");
+
           } catch (err: any) {
+            console.error("Payment error:", err);
             setMessage("❌ " + (err.message || "Something went wrong"));
+            onPaymentComplete(false, err.message);
           } finally {
             setLoading(false);
           }
@@ -129,7 +165,7 @@ export const PaymentCard = ({
     };
 
     loadQuickstream();
-  }, [custNo, planName, onPaymentProcessed]);
+  }, [custNo, planName, planPrice, onPaymentComplete]);
 
   return (
     <div className="bg-white/90 rounded-2xl p-3 w-full shadow-md">
