@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 const SupportBanner2 = () => {
   const router = useRouter();
   const handleSwitchToEsim = () => {
-    router.push("/chat-window?fromBanner=true");
+    router.push("/chat-window");
   };
 
   return (
