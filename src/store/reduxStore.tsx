@@ -3,10 +3,12 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import { combineReducers } from "redux";
 import loginSlice from "@/reduxSlices/loginSlice";
+import servicesSlice from "@/reduxSlices/serviceSlice";
 
 // Combine reducers
 const rootReducer = combineReducers({
   login: loginSlice.reducer,
+  service: servicesSlice.reducer,
 });
 
 // Persist configuration
