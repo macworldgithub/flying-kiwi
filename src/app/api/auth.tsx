@@ -25,7 +25,7 @@ export const LoginApi = createAsyncThunk<
       headers: { Authorization: `Bearer ${access_token}` },
     });
 
-    const { custNo } = meRes.data;
+    const custNo = meRes.data?.user?.custNo;
 
     if (custNo) {
       localStorage.setItem("custNo", custNo);
@@ -38,6 +38,30 @@ export const LoginApi = createAsyncThunk<
   } catch (error: any) {
     return rejectWithValue(
       error.response?.data || { message: "Something went wrong" }
+    );
+  }
+});
+
+export const DeleteCustomerApi = createAsyncThunk<
+  any,
+  void,
+  { rejectValue: { message: string } }
+>("customer/delete", async (_, { getState, rejectWithValue }) => {
+  try {
+    const custNo = localStorage.getItem("custNo");
+
+    if (!custNo) {
+      return rejectWithValue({ message: "Customer number not found" });
+    }
+
+    await axios.delete(`https://bele.omnisuiteai.com/api/v1/customers/${custNo}`);
+
+    localStorage.removeItem("custNo");
+
+    return { custNo };
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data || { message: "Failed to delete customer" }
     );
   }
 });

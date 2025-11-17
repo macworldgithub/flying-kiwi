@@ -1,5 +1,4 @@
-// store/login/loginSlice.ts
-import { LoginApi } from "@/app/api/auth";
+import { DeleteCustomerApi, LoginApi } from "@/app/api/auth";
 import { createSlice } from "@reduxjs/toolkit";
 
 interface LoginState {
@@ -53,6 +52,18 @@ const loginSlice = createSlice({
           typeof action.payload === "string"
             ? action.payload
             : action.payload?.message || "Login failed";
+      })
+      .addCase(DeleteCustomerApi.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(DeleteCustomerApi.fulfilled, (state, action) => {
+        state.loading = false;
+        state.custNo = null;
+      })
+      .addCase(DeleteCustomerApi.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Failed to delete customer";
       });
   },
 });
