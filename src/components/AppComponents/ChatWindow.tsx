@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { PaymentProcessCard } from "./PaymentProcessCard";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -27,10 +26,8 @@ const ChatWindow = () => {
   const [numberOptions, setNumberOptions] = useState<string[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
   const [custNo, setCustNo] = useState<string | null>(null);
-  const [paymentId, setPaymentId] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const fromBanner = searchParams.get("fromBanner");
@@ -46,6 +43,7 @@ const ChatWindow = () => {
         }),
       };
       setChat([initialBotMsg]);
+      setShowDetailsForm(true);
     }
   }, [fromBanner]);
 
@@ -62,12 +60,8 @@ const ChatWindow = () => {
           const preselected = plansList.find((p) => p.planName === planParam);
           if (preselected) {
             setSelectedPlan(preselected);
-            setShowDetailsForm(true);
-          } else {
-            setShowDetailsForm(true);
+            setShowDetailsForm(true); 
           }
-        } else {
-          setShowDetailsForm(true);
         }
       } catch (err) {
         console.error("Error fetching plans:", err);
@@ -215,6 +209,7 @@ const ChatWindow = () => {
     if (!validateForm()) {
       return;
     }
+    localStorage.setItem("userEmail", formData.email);
     const formatted = Object.entries(formData)
       .map(([key, value]) => `${key}: ${value}`)
       .join(", ");
@@ -224,6 +219,7 @@ const ChatWindow = () => {
 
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
+    localStorage.setItem("planPrice", String(plan.price));
     setShowPlans(false);
     setShowPayment(true);
     handleSend(`I would like to select the plan: ${plan.planName}`);
@@ -281,10 +277,10 @@ const ChatWindow = () => {
     try {
       const payload = sessionId
         ? {
-            query: userMsg.text,
-            session_id: sessionId,
-            brand: "flying-kiwi",
-          }
+          query: userMsg.text,
+          session_id: sessionId,
+          brand: "flying-kiwi",
+        }
         : { query: userMsg.text, brand: "flying-kiwi" };
 
       const response = await fetch("/api", {
@@ -527,9 +523,8 @@ const ChatWindow = () => {
           {chat.map((msg) => (
             <div
               key={msg.id}
-              className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                msg.type === "user" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
             >
               {msg.type === "bot" && (
                 <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -542,11 +537,10 @@ const ChatWindow = () => {
               )}
 
               <div
-                className={`${
-                  msg.type === "user"
-                    ? "bg-white text-[#0E3B5C]"
-                    : "bg-white text-[#0E3B5C]"
-                } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                className={`${msg.type === "user"
+                  ? "bg-white text-[#0E3B5C]"
+                  : "bg-white text-[#0E3B5C]"
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
               >
                 <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                   {msg.text}
@@ -770,24 +764,13 @@ const ChatWindow = () => {
               <PaymentCard
                 custNo={custNo || ""}
                 planName={selectedPlan.planName}
-                onPaymentProcessed={(paymentId) => {
-                  setPaymentId(paymentId);
+                planPrice={selectedPlan.price}
+                onPaymentComplete={(success, msg) => {
                   setShowPayment(false);
-                  setShowPaymentProcessCard(true);
-                  handleSend(
-                    `Payment completed for plan ${selectedPlan.planName}`
-                  );
+                  handleSend(msg);
+                  if (success) handleActivateOrder();
+
                 }}
-              />
-            ) : showPaymentProcessCard ? (
-              <PaymentProcessCard
-                onClose={() => {
-                  setShowPaymentProcessCard(false);
-                  handleSend("Payment processing completed!");
-                  handleActivateOrder();
-                }}
-                defaultCustNo={custNo || ""}
-                defaultPaymentId={paymentId || ""}
               />
             ) : (
               <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">
