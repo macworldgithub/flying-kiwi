@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
@@ -23,10 +24,23 @@ const NAV_LINKS = [
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { access_token } = useSelector((state: RootState) => state.login);
-  const isLoggedIn = !!access_token || !!localStorage.getItem("access_token");
+
+  useEffect(() => {
+    setIsLoggedIn(!!access_token || !!localStorage.getItem("access_token"));
+  }, [access_token]);
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setIsLoggedIn(!!localStorage.getItem("access_token"));
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   const handleSwitchToEsim = () => router.push("/chat-window?fromBanner=true");
   const handleLogin = () => router.push("/login");
@@ -34,6 +48,7 @@ export const Navbar: React.FC = () => {
     localStorage.removeItem("persist:flywing-kiwi-root");
     localStorage.removeItem("access_token");
     dispatch(logout());
+    setIsLoggedIn(false);
     router.push("/login");
   };
 
