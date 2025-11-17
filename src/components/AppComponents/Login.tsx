@@ -22,6 +22,7 @@ export const Login = () => {
 
   const handleLogin = () => {
     dispatch(LoginApi());
+    router.push("/");
   };
 
   const handleClose = () => {

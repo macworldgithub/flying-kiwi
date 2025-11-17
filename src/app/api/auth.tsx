@@ -10,13 +10,34 @@ export const LoginApi = createAsyncThunk<
   try {
     const { email, pin } = (getState() as RootState).login;
 
-    const res = await axios.post(`https://bele.omnisuiteai.com/auth/login`, {
-      email,
-      pin,
+    const loginRes = await axios.post(
+      `https://bele.omnisuiteai.com/auth/login`,
+      { email, pin }
+    );
+
+    const { access_token } = loginRes.data;
+
+    if (!access_token) {
+      return rejectWithValue({ message: "Login failed: No access token" });
+    }
+
+    const meRes = await axios.get(`https://bele.omnisuiteai.com/user/me`, {
+      headers: { Authorization: `Bearer ${access_token}` },
     });
 
-    return res.data;
+    const { custNo } = meRes.data;
+
+    if (custNo) {
+      localStorage.setItem("custNo", custNo);
+    }
+
+    return {
+      ...loginRes.data,
+      custNo: custNo || null,
+    };
   } catch (error: any) {
-    return rejectWithValue(error.response?.data || "Something went wrong");
+    return rejectWithValue(
+      error.response?.data || { message: "Something went wrong" }
+    );
   }
 });

@@ -1,11 +1,14 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Link } from "../UIComponents/Link";
 import { Button } from "../UIComponents/Button";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/reduxStore";
+import { logout } from "@/reduxSlices/loginSlice";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -18,11 +21,30 @@ const NAV_LINKS = [
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { access_token } = useSelector((state: RootState) => state.login);
+
+  const [dummy, setDummy] = useState(0);
+  const isLoggedIn = !!access_token || !!localStorage.getItem("access_token");
+
+  useEffect(() => {
+    const handleStorage = () => setDummy((prev) => prev + 1);
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   const handleSwitchToEsim = () => {
     router.push("/chat-window?fromBanner=true");
   };
+
   const handleLogin = () => {
+    router.push("/login");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("persist:flywing-kiwi-root");
+    localStorage.removeItem("access_token");
+    dispatch(logout());
     router.push("/login");
   };
 
@@ -57,11 +79,29 @@ export const Navbar: React.FC = () => {
           <Button variant="gradient" size="md" onClick={handleSwitchToEsim}>
             Switch to E-sim
           </Button>
-          <Button className="ml-10" variant="gradient" size="md" onClick={handleLogin}>
-            Login
-          </Button>
+
+          {!isLoggedIn ? (
+            <Button
+              className="ml-10"
+              variant="gradient"
+              size="md"
+              onClick={handleLogin}
+            >
+              Login
+            </Button>
+          ) : (
+            <Button
+              className="ml-10"
+              variant="outline"
+              size="md"
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          )}
         </div>
 
+        {/* Mobile menu toggle */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="md:hidden text-gray-700 focus:outline-none"
@@ -94,10 +134,30 @@ export const Navbar: React.FC = () => {
                 variant="gradient"
                 size="md"
                 className="w-full mt-2"
-                onClick={() => setIsOpen(false)}
+                onClick={handleSwitchToEsim}
               >
                 Switch to E-sim
               </Button>
+
+              {!isLoggedIn ? (
+                <Button
+                  variant="gradient"
+                  size="md"
+                  className="w-full mt-2"
+                  onClick={handleLogin}
+                >
+                  Login
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="md"
+                  className="w-full mt-2"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </Button>
+              )}
             </nav>
           </motion.div>
         )}

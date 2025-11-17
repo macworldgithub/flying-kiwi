@@ -7,6 +7,8 @@ interface LoginState {
   pin: string;
   loading: boolean;
   error: string | null;
+  access_token: string | null;
+  custNo?: string | null;
 }
 
 const initialState: LoginState = {
@@ -14,6 +16,8 @@ const initialState: LoginState = {
   pin: "",
   loading: false,
   error: null,
+  access_token: null,
+  custNo: null,
 };
 
 const loginSlice = createSlice({
@@ -26,6 +30,11 @@ const loginSlice = createSlice({
     setPin: (state, action) => {
       state.pin = action.payload;
     },
+    logout: (state) => {
+      state.access_token = null;
+      state.email = "";
+      state.pin = "";
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -33,8 +42,10 @@ const loginSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(LoginApi.fulfilled, (state) => {
+      .addCase(LoginApi.fulfilled, (state, action) => {
         state.loading = false;
+        state.access_token = action.payload?.access_token || null;
+        state.custNo = action.payload?.custNo || null;
       })
       .addCase(LoginApi.rejected, (state, action) => {
         state.loading = false;
@@ -46,5 +57,5 @@ const loginSlice = createSlice({
   },
 });
 
-export const { setEmail, setPin } = loginSlice.actions;
+export const { setEmail, setPin, logout } = loginSlice.actions;
 export default loginSlice;
