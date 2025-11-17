@@ -4,14 +4,18 @@ import { useEffect, useState } from "react";
 interface PaymentCardProps {
   custNo: string;
   planName: string;
-  planPrice?: number; // Optional: Pass plan price directly for clarity
+  planNo?: string;
+  planPrice?: number;
+  fromChangePlan?: boolean;
   onPaymentComplete: (success: boolean, message: string) => void;
 }
 
 export const PaymentCard = ({
   custNo,
   planName,
+  planNo,
   planPrice,
+  fromChangePlan,
   onPaymentComplete,
 }: PaymentCardProps) => {
   const [loading, setLoading] = useState(false);
@@ -105,7 +109,6 @@ export const PaymentCard = ({
             const token = data?.singleUseToken?.singleUseTokenId;
             if (!token) throw new Error("No token returned");
 
-            // ✅ Save payment method first
             const methodResponse = await fetch(
               "https://bele.omnisuiteai.com/api/v1/payments/methods",
               {
@@ -120,12 +123,25 @@ export const PaymentCard = ({
               throw new Error(methodData.message || "Payment method failed");
 
             const paymentId = methodData.data.paymentId;
+            let email = "";
+            if (typeof window !== "undefined") {
+              const storedRoot = localStorage.getItem(
+                "persist:flywing-kiwi-root"
+              );
 
-            // ✅ Build process payload
-            const email =
-              localStorage.getItem("userEmail") || ""; // from earlier form save
+              if (storedRoot) {
+                const parsedRoot = JSON.parse(storedRoot);
+
+                if (parsedRoot.login) {
+                  const loginData = JSON.parse(parsedRoot.login);
+                  email = loginData.email || "";
+                }
+              }
+            }
+
             const amount =
-              String(planPrice) || String(localStorage.getItem("planPrice") || 0);
+              String(planPrice) ||
+              String(localStorage.getItem("planPrice") || 0);
             const comment = `Ref-${Math.random().toString(36).substring(2, 8)}`;
 
             const processPayload = {
@@ -136,7 +152,6 @@ export const PaymentCard = ({
               comment,
             };
 
-            // ✅ Call process API
             const processResponse = await fetch(
               "https://bele.omnisuiteai.com/api/v1/payments/process",
               {
@@ -150,9 +165,27 @@ export const PaymentCard = ({
             if (!processResponse.ok)
               throw new Error(processData.message || "Payment failed");
 
+            if (fromChangePlan) {
+              const storedCustNo = localStorage.getItem("custNo");
+              if (!storedCustNo) throw new Error("Customer number missing");
+
+              const updateResponse = await fetch(
+                `https://bele.omnisuiteai.com/api/v1/orders/${storedCustNo}/plan`,
+                {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ planNo: String(planNo) }),
+                }
+              );
+
+              const updateData = await updateResponse.json();
+              if (!updateResponse.ok)
+                throw new Error(updateData.message || "Plan update failed");
+
+              console.log("Plan updated:", updateData);
+            }
             setMessage("✅ Payment processed successfully!");
             onPaymentComplete(true, "Payment successful");
-
           } catch (err: any) {
             console.error("Payment error:", err);
             setMessage("❌ " + (err.message || "Something went wrong"));

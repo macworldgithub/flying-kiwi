@@ -10,7 +10,7 @@ export const FloatingChatButton = () => {
   const [hovered, setHovered] = useState(false);
 
   const handleChatClick = () => {
-    router.push("/chat-window"); 
+    router.push("/chat-window");
   };
 
   return (
@@ -29,7 +29,7 @@ export const FloatingChatButton = () => {
           layout: { type: "spring", stiffness: 350, damping: 25 },
           scale: { type: "spring", stiffness: 400, damping: 20 },
         }}
-        className="relative flex items-center bg-linear-to-r from-blue-600 to-teal-500 text-white rounded-full shadow-lg hover:shadow-xl overflow-hidden cursor-pointer"
+        className="relative flex items-center bg-linear-to-r from-[#13AFF0] to-[#EB0FB6] text-white rounded-full shadow-lg hover:shadow-xl overflow-hidden cursor-pointer"
         onClick={handleChatClick}
       >
         <div className="p-4 flex items-center justify-center">

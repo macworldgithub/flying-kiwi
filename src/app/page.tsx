@@ -1,3 +1,5 @@
+"use client";
+
 import HomeBanner from "@/components/AppComponents/HomeBanner";
 import HomeBanner2 from "@/components/AppComponents/HomeBanner2";
 import HomeBanner3 from "@/components/AppComponents/HomeBanner3";

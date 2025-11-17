@@ -7,7 +7,7 @@ import { VariantProps, cva } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center font-medium rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition-all disabled:opacity-50 select-none",
+  "inline-flex items-center justify-center font-medium rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition-all disabled:opacity-50 select-none cursor-pointer",
   {
     variants: {
       variant: {
@@ -19,6 +19,8 @@ const buttonVariants = cva(
           "text-gray-800 hover:bg-gray-100 focus-visible:ring-gray-300 dark:text-white dark:hover:bg-gray-800",
         gradient:
           "bg-gradient-to-r from-[#13AFF0] to-[#EB0FB6] text-white hover:opacity-90 focus-visible:ring-pink-400",
+        destructive:
+          "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500",
       },
       size: {
         sm: "h-8 px-3 text-xs sm:text-sm md:text-sm",
@@ -46,7 +48,7 @@ export interface ButtonProps
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   children?: React.ReactNode;
-  type?: "button" | "submit" | "reset"; 
+  type?: "button" | "submit" | "reset";
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -63,7 +65,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => (
   <motion.button
-    type={type} 
+    type={type}
     whileTap={{ scale: 0.97 }}
     whileHover={{ scale: 1.03 }}
     transition={{ type: "spring", stiffness: 300, damping: 15 }}
@@ -78,9 +80,12 @@ export const Button: React.FC<ButtonProps> = ({
     ) : (
       leftIcon && (
         <span className="mr-2 flex items-center">
-          {React.cloneElement(leftIcon as React.ReactElement<{ className?: string }>, {
-            className: "h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6",
-          })}
+          {React.cloneElement(
+            leftIcon as React.ReactElement<{ className?: string }>,
+            {
+              className: "h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6",
+            }
+          )}
         </span>
       )
     )}
@@ -89,9 +94,12 @@ export const Button: React.FC<ButtonProps> = ({
 
     {!isLoading && rightIcon && (
       <span className="ml-2 flex items-center">
-        {React.cloneElement(rightIcon as React.ReactElement<{ className?: string }>, {
-          className: "h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6",
-        })}
+        {React.cloneElement(
+          rightIcon as React.ReactElement<{ className?: string }>,
+          {
+            className: "h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6",
+          }
+        )}
       </span>
     )}
   </motion.button>
