@@ -22,6 +22,9 @@ export const Navbar: React.FC = () => {
   const handleSwitchToEsim = () => {
     router.push("/chat-window?fromBanner=true");
   };
+  const handleLogin = () => {
+    router.push("/login");
+  };
 
   return (
     <header className="fixed top-0 left-0 z-50 w-full border-b border-gray-200 bg-white/70 backdrop-blur-md">
@@ -53,6 +56,9 @@ export const Navbar: React.FC = () => {
         <div className="hidden md:block">
           <Button variant="gradient" size="md" onClick={handleSwitchToEsim}>
             Switch to E-sim
+          </Button>
+          <Button className="ml-10" variant="gradient" size="md" onClick={handleLogin}>
+            Login
           </Button>
         </div>
 
