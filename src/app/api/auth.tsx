@@ -12,7 +12,7 @@ export const LoginApi = createAsyncThunk<
 
     const loginRes = await axios.post(
       `https://bele.omnisuiteai.com/auth/login`,
-      { email, pin }
+      { identifier: email, pin }
     );
 
     const { access_token } = loginRes.data;
