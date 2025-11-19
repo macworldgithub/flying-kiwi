@@ -6,6 +6,7 @@ interface PaymentCardProps {
   planName: string;
   planNo?: string;
   planPrice?: number;
+  email?: string;
   fromChangePlan?: boolean;
   onPaymentComplete: (success: boolean, message: string) => void;
 }
@@ -15,6 +16,7 @@ export const PaymentCard = ({
   planName,
   planNo,
   planPrice,
+  email: propEmail = "",
   fromChangePlan,
   onPaymentComplete,
 }: PaymentCardProps) => {
@@ -123,21 +125,23 @@ export const PaymentCard = ({
               throw new Error(methodData.message || "Payment method failed");
 
             const paymentId = methodData.data.paymentId;
-            let email = "";
-            if (typeof window !== "undefined") {
-              const storedRoot = localStorage.getItem(
-                "persist:flywing-kiwi-root"
-              );
+            // let email = "";
+            // if (typeof window !== "undefined") {
+            //   const storedRoot = localStorage.getItem(
+            //     "persist:flywing-kiwi-root"
+            //   );
 
-              if (storedRoot) {
-                const parsedRoot = JSON.parse(storedRoot);
+            //   if (storedRoot) {
+            //     const parsedRoot = JSON.parse(storedRoot);
 
-                if (parsedRoot.login) {
-                  const loginData = JSON.parse(parsedRoot.login);
-                  email = loginData.email || "";
-                }
-              }
-            }
+            //     if (parsedRoot.login) {
+            //       const loginData = JSON.parse(parsedRoot.login);
+            //       email = loginData.email || "";
+            //     }
+            //   }
+            // }
+            // ← Yeh nayi line add karo (prop se pehle, localStorage se baad mein)
+            const email = propEmail || localStorage.getItem("userEmail") || "";
 
             const amount =
               String(planPrice) ||
