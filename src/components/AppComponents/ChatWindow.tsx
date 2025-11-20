@@ -249,10 +249,22 @@ const ChatWindow = () => {
     ]);
   };
 
-
   const handleNumberSelect = async (num: string) => {
     setSelectedSim(num);
     setShowNumberButtons(false);
+
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "user",
+        text: `You selected this number: ${num}`,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
 
     await callAPI(num);
 
@@ -278,10 +290,24 @@ const ChatWindow = () => {
   const handlePlanSelect = (plan: Plan) => {
     setSelectedPlan(plan);
     localStorage.setItem("planPrice", String(plan.price));
-    setShowPlans(false);
-    setShowPayment(true);
 
-    handleSend(`I would like to select the plan: ${plan.planName}`);
+    setShowPlans(false);
+
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "user",
+        text: `You selected this plan: ${plan.planName}`,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+
+    callAPI(`User selected plan ${plan.planName}`);
+    setShowPayment(true);
   };
 
   const handleActivateOrder = async () => {
@@ -299,23 +325,17 @@ const ChatWindow = () => {
         simNo: "",
       };
 
-      const res = await fetch(
-        "https://bele.omnisuiteai.com/api/v1/orders/activate",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
-
-      const result = await res.json();
-
-      if (res.ok) handleSend("Order successfully activated!");
-      else handleSend(`Activation failed: ${result.message}`);
+      await fetch("https://bele.omnisuiteai.com/api/v1/orders/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      alert("Your order has been successfully activated.");
     } catch {
       handleSend("Activation failed. Please try again.");
     }
   };
+
   const sendMessage = () => {
     handleSend(message);
   };
@@ -613,7 +633,18 @@ const ChatWindow = () => {
                 planPrice={selectedPlan.price}
                 onPaymentComplete={(success, msg) => {
                   setShowPayment(false);
-                  handleSend(msg);
+                  setChat((prev) => [
+                    ...prev,
+                    {
+                      id: prev.length + 1,
+                      type: "bot",
+                      text: msg,
+                      time: new Date().toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }),
+                    },
+                  ]);
                   if (success) handleActivateOrder();
                 }}
               />

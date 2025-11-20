@@ -188,8 +188,17 @@ export const PaymentCard = ({
 
               console.log("Plan updated:", updateData);
             }
-            setMessage("✅ Payment processed successfully!");
-            onPaymentComplete(true, "Payment successful");
+            const receiptNumber = processData?.data?.receiptNumber || "";
+
+            const customMessage = `Great news... your eSIM has been created with bele. Here is your receipt number: ${receiptNumber}. Take a copy of it now, but you will also be getting an email of it.
+
+Step 3 is installing the eSIM on your phone. You will receive a QR Code in the next 5 to 10 minutes via email from: donotreply@mobileservicesolutions.com.au
+Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minutes.`;
+
+            setMessage("Payment processed successfully!");
+
+            // Send message back to ChatWindow to display in chat
+            onPaymentComplete(true, customMessage);
           } catch (err: any) {
             console.error("Payment error:", err);
             setMessage("❌ " + (err.message || "Something went wrong"));
