@@ -200,7 +200,10 @@ const ChatWindow = () => {
 
     setChat((prev) => [...prev, userMsg]);
     setMessage("");
+
     setLoading(true);
+
+    await new Promise((res) => setTimeout(res, 50));
 
     const data = await callAPI(text);
     setLoading(false);
@@ -249,12 +252,27 @@ const ChatWindow = () => {
     ]);
   };
 
-
   const handleNumberSelect = async (num: string) => {
     setSelectedSim(num);
     setShowNumberButtons(false);
 
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "user",
+        text: `You selected this number: ${num}`,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 50));
     await callAPI(num);
+    setLoading(false);
 
     setChat((prev) => [
       ...prev,
@@ -278,10 +296,24 @@ const ChatWindow = () => {
   const handlePlanSelect = (plan: Plan) => {
     setSelectedPlan(plan);
     localStorage.setItem("planPrice", String(plan.price));
-    setShowPlans(false);
-    setShowPayment(true);
 
-    handleSend(`I would like to select the plan: ${plan.planName}`);
+    setShowPlans(false);
+
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "user",
+        text: `You selected this plan: ${plan.planName}`,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+
+    callAPI(`User selected plan ${plan.planName}`);
+    setShowPayment(true);
   };
 
   const handleActivateOrder = async () => {
@@ -308,14 +340,37 @@ const ChatWindow = () => {
         }
       );
 
-      const result = await res.json();
+      const data = await res.json();
+      if (!res.ok) throw new Error("Activation failed");
+      const receiptNumber = data?.data?.orderId || "";
 
-      if (res.ok) handleSend("Order successfully activated!");
-      else handleSend(`Activation failed: ${result.message}`);
-    } catch {
+      const activationMessage = `Great news... your eSIM has been created with flying-kiwi.
+
+Here is your receipt number: ${receiptNumber}.
+Take a copy of it now, but you will also be getting an email of it.
+
+Step 3 is installing the eSIM on your phone.
+You will receive a QR Code in the next 5 to 10 minutes via email from: donotreply@mobileservicesolutions.com.au
+
+Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minutes.`;
+
+      setChat((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          type: "bot",
+          text: activationMessage,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+    } catch (err) {
       handleSend("Activation failed. Please try again.");
     }
   };
+
   const sendMessage = () => {
     handleSend(message);
   };
@@ -372,7 +427,7 @@ const ChatWindow = () => {
               }`}
             >
               {msg.type === "bot" && (
-                <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full shrink-0 flex items-center justify-center overflow-hidden">
                   <img
                     src="/images/bot.png"
                     alt="Bot Avatar"
@@ -388,7 +443,7 @@ const ChatWindow = () => {
                     : "bg-white text-[#0E3B5C]"
                 } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
               >
-                <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
+                <p className="text-xs sm:text-xs md:text-sm leading-relaxed wrap-break-word">
                   {msg.text}
                 </p>
               </div>
@@ -613,7 +668,22 @@ const ChatWindow = () => {
                 planPrice={selectedPlan.price}
                 onPaymentComplete={(success, msg) => {
                   setShowPayment(false);
-                  handleSend(msg);
+
+                  if (msg) {
+                    setChat((prev) => [
+                      ...prev,
+                      {
+                        id: prev.length + 1,
+                        type: "bot",
+                        text: msg,
+                        time: new Date().toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }),
+                      },
+                    ]);
+                  }
+
                   if (success) handleActivateOrder();
                 }}
               />

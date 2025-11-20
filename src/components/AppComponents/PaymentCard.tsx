@@ -188,12 +188,12 @@ export const PaymentCard = ({
 
               console.log("Plan updated:", updateData);
             }
-            setMessage("✅ Payment processed successfully!");
-            onPaymentComplete(true, "Payment successful");
+            setMessage("Payment processed successfully!");
+            onPaymentComplete(true, "");
           } catch (err: any) {
             console.error("Payment error:", err);
             setMessage("❌ " + (err.message || "Something went wrong"));
-            onPaymentComplete(false, err.message);
+            onPaymentComplete(false, "");
           } finally {
             setLoading(false);
           }
