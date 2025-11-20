@@ -31,7 +31,7 @@ const NAV_LINKS = [
   { label: "Contact", href: "/Contact" },
 ];
 
-export const Navbar: React.Fc = () => {
+export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showChangePin, setShowChangePin] = useState(false);
