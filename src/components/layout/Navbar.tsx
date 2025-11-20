@@ -22,6 +22,7 @@ import { AppDispatch, RootState } from "@/store/reduxStore";
 import { logout } from "@/reduxSlices/loginSlice";
 import DeleteCustomerModal from "../AppComponents/DeleteCustomerModal";
 import { DeleteCustomerApi } from "@/app/api/auth";
+import { ProfileDropdown } from "../AppComponents/ProfileDropdown";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -229,46 +230,22 @@ export const Navbar: React.FC = () => {
               />
             ))}
 
-            {isLoggedIn && (
-              <>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowDeleteModal(true)}
-                >
-                  Delete Customer
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setShowChangePin(true)}
-                  className="flex items-center gap-2"
-                >
-                  Change PIN
-                </Button>
-                <Button variant="primary" size="sm" onClick={handleCheckUsage}>
-                  Check Usage
-                </Button>
-              </>
-            )}
           </nav>
 
           {/* Right Buttons */}
           <div className="hidden md:flex items-center gap-4">
-            <Button
-              variant="gradient"
-              onClick={() => router.push("/chat-window?fromBanner=true")}
-            >
-              Switch to E-sim
-            </Button>
             {!isLoggedIn ? (
-              <Button variant="gradient" onClick={() => router.push("/login")}>
+              <Button variant="gradient" onClick={handleLogin}>
                 Login
               </Button>
             ) : (
-              <Button variant="outline" onClick={handleLogout}>
-                Logout
-              </Button>
+              <ProfileDropdown
+                onSwitchToEsim={handleSwitchToEsim}
+                onLogout={handleLogout}
+                onDeleteCustomer={() => setShowDeleteModal(true)}
+                onChangePin={() => setShowChangePin(true)}
+                onCheckUsage={handleCheckUsage}
+              />
             )}
           </div>
 
