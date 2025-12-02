@@ -176,7 +176,7 @@ const ChatWindow = () => {
     setShowDetailsForm(false);
     setShowNumberTypeSelection(true);
     await handleSend(formatted);
-    const prosperityMessage =
+    const numberMessage =
       "Thanks!, Now it’s time to choose a number -- either a new number or your existing number -- from the options below.";
 
     setChat((prev) => [
@@ -184,7 +184,7 @@ const ChatWindow = () => {
       {
         id: prev.length + 1,
         type: "bot",
-        text: prosperityMessage,
+        text: numberMessage,
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -514,8 +514,8 @@ const ChatWindow = () => {
       console.log("Activation payload:", body);
 
       const url = isPorting
-        ? "https://prosperity.omnisuiteai.com/api/v1/orders/activate/port"
-        : "https://prosperity.omnisuiteai.com/api/v1/orders/activate";
+        ? "https://bele.omnisuiteai.com/api/v1/orders/activate/port"
+        : "https://bele.omnisuiteai.com/api/v1/orders/activate";
 
       const res = await fetch(url, {
         method: "POST",
