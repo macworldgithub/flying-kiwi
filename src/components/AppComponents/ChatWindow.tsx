@@ -158,7 +158,7 @@ const ChatWindow = () => {
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name as keyof typeof formData;
     const { value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value.trim() }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
   };
   const handleFormSubmit = async (e: any) => {
