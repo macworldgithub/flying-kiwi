@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
+import { formatDob } from "@/lib/utils";
 
 interface Plan {
   _id: string;
@@ -36,6 +37,21 @@ const ChatWindow = () => {
   const [numberOptions, setNumberOptions] = useState<string[]>([]);
 
   const [userEmail, setUserEmail] = useState("");
+
+  const [showExistingNumberOptions, setShowExistingNumberOptions] =
+    useState(false);
+  const [showNumberTypeSelection, setShowNumberTypeSelection] = useState(false);
+  const [showConfirmNewNumber, setShowConfirmNewNumber] = useState(false);
+  const [existingNumberType, setExistingNumberType] = useState<
+    "prepaid" | "postpaid" | null
+  >(null);
+  const [showArnInput, setShowArnInput] = useState(false);
+  const [arn, setArn] = useState("");
+  const [existingPhone, setExistingPhone] = useState("");
+  const [showConfirmExistingNumber, setShowConfirmExistingNumber] =
+    useState(false);
+  const [isPorting, setIsPorting] = useState(false);
+  const [hasSelectedNumber, setHasSelectedNumber] = useState(false);
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -145,10 +161,11 @@ const ChatWindow = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
   };
-  const handleFormSubmit = (e: any) => {
+  const handleFormSubmit = async (e: any) => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    localStorage.setItem("userDOB", formData.dob);
     setUserEmail(formData.email);
     localStorage.setItem("userEmail", formData.email);
 
@@ -157,7 +174,23 @@ const ChatWindow = () => {
       .join(", ");
 
     setShowDetailsForm(false);
-    handleSend(formatted);
+    setShowNumberTypeSelection(true);
+    await handleSend(formatted);
+    const prosperityMessage =
+      "Thanks!, Now it’s time to choose a number -- either a new number or your existing number -- from the options below.";
+
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "bot",
+        text: prosperityMessage,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
   };
 
   const callAPI = async (text: string) => {
@@ -205,6 +238,25 @@ const ChatWindow = () => {
 
     await new Promise((res) => setTimeout(res, 50));
 
+    // Skip API call if it's a new number confirmation
+    if (text.toLowerCase().includes("new number") && showConfirmNewNumber) {
+      const botText = "Please choose a number from the selection below.";
+      setChat((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          type: "bot",
+          text: botText,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+      setLoading(false);
+      return;
+    }
+
     const data = await callAPI(text);
     setLoading(false);
 
@@ -229,21 +281,133 @@ const ChatWindow = () => {
       botText.toLowerCase().includes("first name") ||
       botText.toLowerCase().includes("surname")
     ) {
-      setShowDetailsForm(true);
+      if (!showNumberTypeSelection && !showConfirmNewNumber) {
+        setShowDetailsForm(true);
+      }
+      return;
     }
 
     const matches = botText.match(/04\d{8}/g);
-    if (matches?.length === 5) {
+    if (matches?.length === 5 && !isPorting && !hasSelectedNumber) {
       setNumberOptions(matches);
       setShowNumberButtons(true);
+      // Override bot message
+      addBotMessage("Please choose a number from the selection below");
       return;
     }
+    // Only add bot message if it's not empty
+    if (botText.trim()) {
+      setChat((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          type: "bot",
+          text: botText,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+    }
+  };
+
+  const handleNewNumber = () => {
+    setShowNumberTypeSelection(false);
+    setShowConfirmNewNumber(true);
+  };
+
+  const confirmNewNumber = (yes: boolean) => {
+    setShowConfirmNewNumber(false);
+    if (yes) {
+      setIsPorting(false);
+      setHasSelectedNumber(false);
+
+      addBotMessage(
+        "Thanks, now it's time to choose a number from the selection below"
+      );
+
+      if (numberOptions.length > 0) {
+        setShowNumberButtons(true);
+      } else {
+        handleSend("new number");
+      }
+    } else {
+      setShowNumberTypeSelection(true);
+    }
+  };
+  const handleExistingNumber = () => {
+    setShowNumberTypeSelection(false);
+    setShowConfirmNewNumber(true);
+    setExistingNumberType(null);
+    setShowArnInput(false);
+    setArn("");
+    setExistingPhone("");
+    setShowConfirmExistingNumber(false);
+
+    setShowExistingNumberOptions(true);
+  };
+
+  const handleExistingTypeSelect = (type: "prepaid" | "postpaid") => {
+    setExistingNumberType(type);
+    setShowArnInput(type === "postpaid");
+  };
+
+  const handleExistingNumberSubmit = () => {
+    if (!existingPhone.match(/^04\d{8}$/)) {
+      alert(
+        "Please enter a valid 10-digit Australian mobile number starting with 04"
+      );
+      return;
+    }
+    if (existingNumberType === "postpaid" && !arn.trim()) {
+      alert("Please enter your ARN (Account Reference Number)");
+      return;
+    }
+
+    localStorage.setItem("existingPhoneNumber", existingPhone);
+    if (existingNumberType === "postpaid") {
+      localStorage.setItem("arn", arn);
+    }
+
+    setShowExistingNumberOptions(false);
+    setShowConfirmExistingNumber(true);
+  };
+
+  const confirmExistingNumber = (yes: boolean) => {
+    setShowConfirmExistingNumber(false);
+    if (yes) {
+      localStorage.setItem("existingPhoneNumber", existingPhone);
+      if (existingNumberType === "postpaid") {
+        localStorage.setItem("arn", arn);
+      }
+
+      setIsPorting(true);
+      setHasSelectedNumber(true);
+      setSelectedSim(existingPhone);
+
+      setShowNumberButtons(false);
+      if (selectedPlan) {
+        setShowPlans(false);
+      } else {
+        setShowPlans(true);
+      }
+
+      addBotMessage(
+        `Great! We'll port your existing number ${existingPhone}. Now please choose a plan.`
+      );
+    } else {
+      setShowExistingNumberOptions(true);
+    }
+  };
+
+  const addBotMessage = (text: string) => {
     setChat((prev) => [
       ...prev,
       {
         id: prev.length + 1,
-        type: "bot",
-        text: botText,
+        type: "bot" as const,
+        text,
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -251,9 +415,9 @@ const ChatWindow = () => {
       },
     ]);
   };
-
   const handleNumberSelect = async (num: string) => {
     setSelectedSim(num);
+    setHasSelectedNumber(true);
     setShowNumberButtons(false);
 
     setChat((prev) => [
@@ -318,7 +482,13 @@ const ChatWindow = () => {
 
   const handleActivateOrder = async () => {
     try {
-      const body = {
+      const isPorting =
+        existingNumberType === "prepaid" || existingNumberType === "postpaid";
+      const existingType = existingNumberType;
+      const arn = localStorage.getItem("arn") || "";
+      const dob = formData.dob || "";
+
+      let body: any = {
         number: selectedSim,
         cust: {
           custNo,
@@ -331,14 +501,27 @@ const ChatWindow = () => {
         simNo: "",
       };
 
-      const res = await fetch(
-        "https://bele.omnisuiteai.com/api/v1/orders/activate",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
+      if (isPorting) {
+        body.numType = existingType;
+
+        if (existingType === "prepaid") {
+          body.cust.dob = formatDob(dob);
+        } else if (existingType === "postpaid") {
+          body.cust.arn = arn;
         }
-      );
+      }
+
+      console.log("Activation payload:", body);
+
+      const url = isPorting
+        ? "https://prosperity.omnisuiteai.com/api/v1/orders/activate/port"
+        : "https://prosperity.omnisuiteai.com/api/v1/orders/activate";
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
       const data = await res.json();
       if (!res.ok) throw new Error("Activation failed");
@@ -636,6 +819,137 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   Submit Details
                 </button>
               </form>
+            ) : showNumberTypeSelection ? (
+              <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
+                <p className="text-white mb-3">
+                  Do you want a new number or keep your existing one?
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={handleNewNumber}
+                    className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded"
+                  >
+                    New Number
+                  </button>
+                  <button
+                    onClick={handleExistingNumber}
+                    className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded"
+                  >
+                    Existing Number
+                  </button>
+                </div>
+              </div>
+            ) : showConfirmNewNumber ? (
+              <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
+                <p className="text-white mb-3">
+                  Are you sure you want a new number?
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={() => confirmNewNumber(true)}
+                    className="bg-green-600 text-white px-4 py-2 rounded"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => confirmNewNumber(false)}
+                    className="bg-red-600 text-white px-4 py-2 rounded"
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+            ) : showExistingNumberOptions ? (
+              <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30">
+                <p className="text-white mb-3 text-center">
+                  Is your existing number Prepaid or Postpaid?
+                </p>
+                <div className="flex gap-3 justify-center mb-4">
+                  <button
+                    onClick={() => handleExistingTypeSelect("prepaid")}
+                    className={`px-4 py-2 rounded ${
+                      existingNumberType === "prepaid"
+                        ? "bg-linear-to-r from-blue-600 to-teal-500"
+                        : "bg-gray-400"
+                    } text-white`}
+                  >
+                    Prepaid
+                  </button>
+                  <button
+                    onClick={() => handleExistingTypeSelect("postpaid")}
+                    className={`px-4 py-2 rounded ${
+                      existingNumberType === "postpaid"
+                        ? "bg-linear-to-r from-blue-600 to-teal-500"
+                        : "bg-gray-400"
+                    } text-white`}
+                  >
+                    Postpaid
+                  </button>
+                </div>
+
+                <div className="mb-3">
+                  <input
+                    type="tel"
+                    value={existingPhone}
+                    onChange={(e) =>
+                      setExistingPhone(
+                        e.target.value.replace(/\D/g, "").substring(0, 10)
+                      )
+                    }
+                    placeholder="Enter your 10-digit mobile number (04xxxxxxxx)"
+                    className="w-full p-2 rounded bg-transparent border border-white/50 text-white text-center"
+                  />
+                  {existingPhone && !existingPhone.match(/^04\d{8}$/) && (
+                    <p className="text-red-600 text-md mt-1">
+                      Please enter a valid 10-digit Australian mobile number
+                      starting with 04
+                    </p>
+                  )}
+                </div>
+
+                {showArnInput && (
+                  <div className="mb-3">
+                    <input
+                      type="text"
+                      value={arn}
+                      onChange={(e) => setArn(e.target.value)}
+                      placeholder="Enter ARN (Account Reference Number)"
+                      className="w-full p-2 rounded bg-transparent border border-white/50 text-white text-center"
+                    />
+                  </div>
+                )}
+
+                <button
+                  onClick={handleExistingNumberSubmit}
+                  disabled={
+                    !existingPhone.match(/^04\d{8}$/) ||
+                    (existingNumberType === "postpaid" && !arn.trim())
+                  }
+                  className="w-full bg-linear-to-r from-blue-600 to-teal-500 text-white py-2 rounded hover:opacity-90 disabled:opacity-50"
+                >
+                  Continue
+                </button>
+              </div>
+            ) : showConfirmExistingNumber ? (
+              <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
+                <p className="text-white mb-3">
+                  Are you sure you want to port {existingPhone}?
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={() => confirmExistingNumber(true)}
+                    className="bg-green-600 text-white px-4 py-2 rounded"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => confirmExistingNumber(false)}
+                    className="bg-red-600 text-white px-4 py-2 rounded"
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
             ) : showNumberButtons && numberOptions.length > 0 ? (
               <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
                 {numberOptions.map((num, index) => (
