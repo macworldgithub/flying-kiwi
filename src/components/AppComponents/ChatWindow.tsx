@@ -53,6 +53,11 @@ const ChatWindow = () => {
   const [isPorting, setIsPorting] = useState(false);
   const [hasSelectedNumber, setHasSelectedNumber] = useState(false);
 
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpTransactionId, setOtpTransactionId] = useState(""); // to track OTP
+  const [otpVerified, setOtpVerified] = useState(false);
+
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
     if (fromBanner) {
@@ -353,7 +358,7 @@ const ChatWindow = () => {
     setShowArnInput(type === "postpaid");
   };
 
-  const handleExistingNumberSubmit = () => {
+  const handleExistingNumberSubmit = async () => {
     if (!existingPhone.match(/^04\d{8}$/)) {
       alert(
         "Please enter a valid 10-digit Australian mobile number starting with 04"
@@ -364,14 +369,33 @@ const ChatWindow = () => {
       alert("Please enter your ARN (Account Reference Number)");
       return;
     }
-
     localStorage.setItem("existingPhoneNumber", existingPhone);
     if (existingNumberType === "postpaid") {
       localStorage.setItem("arn", arn);
     }
+    try {
+      const res = await fetch("https://bele.omnisuiteai.com/api/v1/auth/otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          custNo,
+          destination: existingPhone,
+        }),
+      });
 
-    setShowExistingNumberOptions(false);
-    setShowConfirmExistingNumber(true);
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "OTP request failed");
+
+      setOtpTransactionId(data.transactionId);
+      setShowExistingNumberOptions(false);
+      setShowConfirmExistingNumber(true);
+      setShowOtpInput(true);
+      addBotMessage("OTP has been sent. Please enter it to proceed.");
+    } catch (err) {
+      console.error(err);
+      addBotMessage("Failed to send OTP. Please try again.");
+    }
   };
 
   const confirmExistingNumber = (yes: boolean) => {
@@ -478,6 +502,40 @@ const ChatWindow = () => {
 
     callAPI(`User selected plan ${plan.planName}`);
     setShowPayment(true);
+  };
+
+  const handleOtpVerify = async () => {
+    if (otpCode.length !== 6) {
+      alert("Please enter a 6-digit OTP");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        "https://bele.omnisuiteai.com/api/v1/auth/otp/verify",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code: otpCode,
+            transactionId: otpTransactionId,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "OTP verification failed");
+
+      setOtpVerified(true);
+      setShowOtpInput(false);
+      addBotMessage(
+        "OTP verified successfully! You can now proceed to payment."
+      );
+    } catch (err) {
+      console.error(err);
+      addBotMessage("OTP verification failed. Please try again.");
+    }
   };
 
   const handleActivateOrder = async () => {
@@ -975,7 +1033,31 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   </button>
                 ))}
               </div>
-            ) : showPayment && selectedPlan ? (
+            ) : showOtpInput ? ( // OTP input only appears for existing numbers
+              <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
+                <p className="text-sm sm:text-base">
+                  Enter the OTP sent to your existing number:
+                </p>
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) =>
+                    setOtpCode(e.target.value.replace(/\D/g, ""))
+                  }
+                  className="w-full p-2 rounded bg-transparent border border-white/50 text-center text-white text-sm sm:text-base"
+                  placeholder="Enter 6-digit OTP"
+                />
+                <button
+                  onClick={handleOtpVerify}
+                  className="bg-[#2bb673] text-white px-4 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
+                >
+                  Verify OTP
+                </button>
+              </div>
+            ) : showPayment &&
+              selectedPlan &&
+              (existingNumberType ? otpVerified : true) ? (
               <PaymentCard
                 custNo={custNo || ""}
                 planName={selectedPlan.planName}
