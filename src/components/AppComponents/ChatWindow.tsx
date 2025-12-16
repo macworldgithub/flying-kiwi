@@ -560,7 +560,7 @@ const ChatWindow = () => {
     }
   };
   const callDeleteIntentAPI = async (text: string) => {
-    const res = await fetch("https://prosperity.omnisuiteai.com/chat/query", {
+    const res = await fetch("https://bele.omnisuiteai.com/chat/query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: text }),
