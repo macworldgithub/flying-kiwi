@@ -87,7 +87,7 @@ export const Login = () => {
                 />
 
                 <FormInput
-                  label="PIN"
+                  label="Create your PIN no"
                   type="password"
                   placeholder="Enter your PIN"
                   value={pin}
