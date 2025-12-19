@@ -64,9 +64,16 @@ const ChatWindow = () => {
   const [states, setStates] = useState([]);
   const [loadingStates, setLoadingStates] = useState(false);
 
+  const [showInitialOptions, setShowInitialOptions] = useState(true);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [isTypingEnabled, setIsTypingEnabled] = useState(false);
+  const [isTransferMode, setIsTransferMode] = useState(false);
+
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
     if (fromBanner) {
+      setShowInitialOptions(false);
+      setIsTypingEnabled(true);
       setChat([
         {
           id: 1,
@@ -196,10 +203,15 @@ const ChatWindow = () => {
       .join(", ");
 
     setShowDetailsForm(false);
-    setShowNumberTypeSelection(true);
+    if (isTransferMode) {
+      setShowExistingNumberOptions(true);
+    } else {
+      setShowNumberTypeSelection(true);
+    }
     await handleSend(formatted);
-    const numberMessage =
-      "Thanks!, Now it’s time to choose a number -- either a new number or your existing number -- from the options below.";
+    const numberMessage = isTransferMode
+      ? "Thanks! Now let's proceed with transferring your existing number. Please provide your number details below."
+      : "Thanks!, Now it's time to choose a number -- either a new number or your existing number -- from the options below.";
 
     setChat((prev) => [
       ...prev,
@@ -683,6 +695,35 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
     }
   };
 
+  const handleInitialOptionSelect = async (option: string) => {
+    setSelectedOption(option);
+    setShowInitialOptions(false);
+
+    const userMsg = {
+      id: chat.length + 1,
+      type: "user" as const,
+      text: option,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+
+    setChat((prev) => [...prev, userMsg]);
+
+    if (option === "Buy an eSIM / Physical SIM") {
+      await handleSend("signup");
+    } else if (option === "Account, billing or Technical Problem") {
+      setIsTypingEnabled(true);
+      addBotMessage(
+        "Please describe your account, billing, or technical issue and I'll help you resolve it."
+      );
+    } else if (option === "transfer-number") {
+      setIsTransferMode(true);
+      await handleSend("signup");
+    }
+  };
+
   const sendMessage = () => {
     handleSend(message);
   };
@@ -775,6 +816,40 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                 <p className="text-[#0E3B5C] text-xs sm:text-xs md:text-sm leading-relaxed">
                   Typing...
                 </p>
+              </div>
+            </div>
+          )}
+
+          {showInitialOptions && (
+            <div className="flex flex-col gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 mb-4">
+              {/* <p className="text-white text-center font-medium mb-2">
+                How can I help you today?
+              </p> */}
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() =>
+                    handleInitialOptionSelect("Buy an eSIM / Physical SIM")
+                  }
+                  className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-3 rounded-lg hover:opacity-90 transition-opacity text-sm sm:text-base font-medium"
+                >
+                  Buy an eSIM / Physical SIM
+                </button>
+                <button
+                  onClick={() =>
+                    handleInitialOptionSelect(
+                      "Account, billing or Technical Problem"
+                    )
+                  }
+                  className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-3 rounded-lg hover:opacity-90 transition-opacity text-sm sm:text-base font-medium"
+                >
+                  Account, billing or Technical Problem
+                </button>
+                <button
+                  onClick={() => handleInitialOptionSelect("transfer-number")}
+                  className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-3 rounded-lg hover:opacity-90 transition-opacity text-sm sm:text-base font-medium"
+                >
+                  Transfer my Number
+                </button>
               </div>
             </div>
           )}
@@ -978,7 +1053,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   Submit Details
                 </button>
               </form>
-            ) : showNumberTypeSelection ? (
+            ) : showNumberTypeSelection && !isTransferMode ? (
               <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
                 <p className="text-white mb-3">
                   Do you want a new number or keep your existing one?
@@ -1192,12 +1267,17 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                   placeholder="Message..."
-                  className="flex-1 bg-transparent text-white placeholder-white/70 text-xs sm:text-sm focus:outline-none"
+                  disabled={!isTypingEnabled || showInitialOptions}
+                  className={`flex-1 bg-transparent text-white placeholder-white/70 text-xs sm:text-sm focus:outline-none ${
+                    !isTypingEnabled || showInitialOptions
+                      ? "cursor-not-allowed opacity-50"
+                      : ""
+                  }`}
                 />
 
                 <button
                   onClick={sendMessage}
-                  disabled={loading}
+                  disabled={loading || !isTypingEnabled || showInitialOptions}
                   className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-linear-to-r from-blue-600 to-teal-500 text-white hover:opacity-90 disabled:opacity-50"
                 >
                   <svg

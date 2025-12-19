@@ -25,11 +25,7 @@ const SupportBanner2 = () => {
             Switch to E-sim Now
           </Button> */}
 
-          <Button
-            variant="gradient"
-            size="lg"
-            onClick={handleSwitchToEsim}
-          >
+          <Button variant="gradient" size="lg" onClick={handleSwitchToEsim}>
             Support with Chat
           </Button>
         </div>
