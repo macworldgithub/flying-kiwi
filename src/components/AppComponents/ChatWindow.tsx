@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
-import { formatDob, isDeleteIntent } from "@/lib/utils";
+import { formatDob, formatDobToISO, isDeleteIntent } from "@/lib/utils";
+import sessionStorage from "redux-persist/es/storage/session";
 
 interface Plan {
   _id: string;
@@ -194,9 +195,11 @@ const ChatWindow = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    localStorage.setItem("userDOB", formData.dob);
+    const isoDob = formatDobToISO(formData.dob);
+
+    sessionStorage.setItem("userDOB", isoDob);
     setUserEmail(formData.email);
-    localStorage.setItem("userEmail", formData.email);
+    sessionStorage.setItem("userEmail", formData.email);
 
     const formatted = Object.entries(formData)
       .map(([k, v]) => `${k}: ${v}`)
@@ -227,6 +230,13 @@ const ChatWindow = () => {
     ]);
   };
 
+  
+  useEffect(() => {
+  sessionStorage.removeItem("custNo");
+  sessionStorage.removeItem("userEmail");
+  sessionStorage.removeItem("userDOB");
+}, []);
+
   const callAPI = async (text: string) => {
     const payload = sessionId
       ? { query: text, session_id: sessionId, brand: "flying-kiwi" }
@@ -244,7 +254,7 @@ const ChatWindow = () => {
 
       if (!sessionId && data.session_id) setSessionId(data.session_id);
       if (data.custNo) setCustNo(data.custNo);
-      if (data.custNo) localStorage.setItem("custNo", data.custNo);
+      if (data.custNo) sessionStorage.setItem("custNo", data.custNo);
       return data;
     } catch (e) {
       console.error("API error:", e);
