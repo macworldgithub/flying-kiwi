@@ -1231,6 +1231,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   Verify OTP
                 </button>
               </div>
+              
             ) : showPayment &&
               selectedPlan &&
               (existingNumberType ? otpVerified : true) ? (
