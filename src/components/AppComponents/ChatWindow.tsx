@@ -1365,6 +1365,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   </button>
                 ))}
               </div>
+              
             ) : showPlans && !selectedPlan && plans.length > 0 ? (
               <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
                 {plans.map((plan, index) => (
@@ -1409,7 +1410,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   Resend OTP
                 </button>
               </div>
-              
+
             ) : showPayment &&
               selectedPlan &&
               (existingNumberType ? otpVerified : true) ? (
