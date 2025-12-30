@@ -685,17 +685,19 @@ const ChatWindow = () => {
       );
 
       const data = await res.json();
+      const verifyOtp = data?.data?.verifyOtp;
 
-      if (!res.ok) throw new Error(data.message || "OTP verification failed");
+      if (!verifyOtp?.valid) {
+        alert(verifyOtp?.message || "OTP verification failed");
+        return;
+      }
 
       setOtpVerified(true);
       setShowOtpInput(false);
-      addBotMessage(
-        "OTP verified successfully! You can now proceed to payment."
-      );
+      alert("OTP verified successfully! You can now proceed to payment.");
     } catch (err) {
       console.error(err);
-      addBotMessage("OTP verification failed. Please try again.");
+      alert("OTP verification failed. Please try again.");
     }
   };
   const callDeleteIntentAPI = async (text: string) => {
