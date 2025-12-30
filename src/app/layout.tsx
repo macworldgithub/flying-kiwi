@@ -1,4 +1,5 @@
 import "./globals.css";
+import "react-datepicker/dist/react-datepicker.css";
 import { Poppins } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";

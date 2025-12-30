@@ -4,6 +4,7 @@ import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatDob, formatDobToISO, isDeleteIntent } from "@/lib/utils";
 import sessionStorage from "redux-persist/es/storage/session";
+import DatePicker from "react-datepicker";
 
 interface Plan {
   _id: string;
@@ -69,6 +70,9 @@ const ChatWindow = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isTypingEnabled, setIsTypingEnabled] = useState(false);
   const [isTransferMode, setIsTransferMode] = useState(false);
+
+  const [numberDecisionMade, setNumberDecisionMade] = useState(false);
+  const [ageError, setAgeError] = useState("");
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -181,6 +185,24 @@ const ChatWindow = () => {
       ok = false;
     }
 
+    if (formData.dob) {
+      const [day, month, year] = formData.dob.split("/").map(Number);
+      const birthDate = new Date(year, month - 1, day);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      if (age < 18) {
+        setAgeError("You must be at least 18 years old to sign up.");
+        ok = false;
+      } else {
+        setAgeError("");
+      }
+    }
+
     setFormErrors(errors);
     return ok;
   };
@@ -190,7 +212,38 @@ const ChatWindow = () => {
     const { value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value.trim() }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
+
+    if (name === "dob" && value.trim()) {
+      const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (match) {
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10);
+        const year = parseInt(match[3], 10);
+
+        const birthDate = new Date(year, month - 1, day);
+        const today = new Date();
+
+        let age = today.getFullYear() - year;
+        const m = today.getMonth() - (month - 1);
+        if (m < 0 || (m === 0 && today.getDate() < day)) {
+          age--;
+        }
+
+        if (age < 18) {
+          setAgeError("You must be at least 18 years old to sign up.");
+        } else {
+          setAgeError("");
+        }
+      }
+    }
   };
+
+  const parseDateFromDDMMYYYY = (dateStr: string) => {
+    if (!dateStr) return null;
+    const [day, month, year] = dateStr.split("/").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const handleFormSubmit = async (e: any) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -230,12 +283,11 @@ const ChatWindow = () => {
     ]);
   };
 
-  
   useEffect(() => {
-  sessionStorage.removeItem("custNo");
-  sessionStorage.removeItem("userEmail");
-  sessionStorage.removeItem("userDOB");
-}, []);
+    sessionStorage.removeItem("custNo");
+    sessionStorage.removeItem("userEmail");
+    sessionStorage.removeItem("userDOB");
+  }, []);
 
   const callAPI = async (text: string) => {
     const payload = sessionId
@@ -351,7 +403,12 @@ const ChatWindow = () => {
     }
 
     const matches = botText.match(/04\d{8}/g);
-    if (matches?.length === 5 && !isPorting && !hasSelectedNumber) {
+    if (
+      matches?.length === 5 &&
+      !isPorting &&
+      !numberDecisionMade &&
+      !hasSelectedNumber
+    ) {
       setNumberOptions(matches);
       setShowNumberButtons(true);
       // Override bot message
@@ -385,7 +442,8 @@ const ChatWindow = () => {
     if (yes) {
       setIsPorting(false);
       setHasSelectedNumber(false);
-
+      setNumberDecisionMade(true);
+      setSelectedOption("new");
       addBotMessage(
         "Thanks, now it's time to choose a number from the selection below"
       );
@@ -427,10 +485,14 @@ const ChatWindow = () => {
       alert("Please enter your ARN (Account Reference Number)");
       return;
     }
-    localStorage.setItem("existingPhoneNumber", existingPhone);
-    if (existingNumberType === "postpaid") {
-      localStorage.setItem("arn", arn);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    if (!custNo) {
+      addBotMessage(
+        "We're having trouble fetching your customer ID. Please try again in a moment."
+      );
+      return;
     }
+
     try {
       const res = await fetch("https://bele.omnisuiteai.com/api/v1/auth/otp", {
         method: "POST",
@@ -445,14 +507,54 @@ const ChatWindow = () => {
 
       if (!res.ok) throw new Error(data.message || "OTP request failed");
 
-      setOtpTransactionId(data.transactionId);
+      setOtpTransactionId(data.data.getOtp.transactionId);
+
       setShowExistingNumberOptions(false);
-      setShowConfirmExistingNumber(true);
+      setShowPlans(false);
+      setShowNumberButtons(false);
+      setShowPayment(false);
+      setShowNumberTypeSelection(false);
       setShowOtpInput(true);
       addBotMessage("OTP has been sent. Please enter it to proceed.");
     } catch (err) {
       console.error(err);
       addBotMessage("Failed to send OTP. Please try again.");
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!existingPhone || !existingPhone.match(/^04\d{8}$/)) {
+      addBotMessage("Cannot resend OTP: Invalid phone number.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await fetch("https://bele.omnisuiteai.com/api/v1/auth/otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          custNo,
+          destination: existingPhone,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to resend OTP");
+      }
+      setOtpTransactionId(data.data.getOtp.transactionId);
+
+      setOtpCode("");
+
+      addBotMessage("A new OTP has been sent to your number.");
+    } catch (err) {
+      console.error(err);
+      addBotMessage("Failed to resend OTP. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -467,6 +569,7 @@ const ChatWindow = () => {
       setIsPorting(true);
       setHasSelectedNumber(true);
       setSelectedSim(existingPhone);
+      setNumberDecisionMade(true);
 
       setShowNumberButtons(false);
       if (selectedPlan) {
@@ -932,22 +1035,66 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       </p>
                     )}
                   </div>
-                  <div>
-                    <input
-                      name="dob"
-                      type="date"
-                      value={formData.dob}
-                      onChange={handleFormChange}
-                      placeholder="Date of Birth"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.dob && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.dob}
-                      </p>
-                    )}
-                  </div>
+                  <DatePicker
+                    selected={
+                      formData.dob ? parseDateFromDDMMYYYY(formData.dob) : null
+                    }
+                    onChange={(date: Date | null) => {
+                      if (date) {
+                        const day = String(date.getDate()).padStart(2, "0");
+                        const month = String(date.getMonth() + 1).padStart(
+                          2,
+                          "0"
+                        );
+                        const year = date.getFullYear();
+                        const newDob = `${day}/${month}/${year}`;
+
+                        setFormData((prev) => ({
+                          ...prev,
+                          dob: newDob,
+                        }));
+
+                        const birthDate = new Date(
+                          year,
+                          date.getMonth(),
+                          date.getDate()
+                        );
+                        const today = new Date();
+
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff =
+                          today.getMonth() - birthDate.getMonth();
+                        if (
+                          monthDiff < 0 ||
+                          (monthDiff === 0 &&
+                            today.getDate() < birthDate.getDate())
+                        ) {
+                          age--;
+                        }
+
+                        if (age < 18) {
+                          setAgeError(
+                            "You must be at least 18 years old to sign up."
+                          );
+                        } else {
+                          setAgeError("");
+                        }
+
+                        setFormErrors((prev: any) => ({ ...prev, dob: "" }));
+                      } else {
+                        setFormData((prev) => ({ ...prev, dob: "" }));
+                        setAgeError("");
+                      }
+                    }}
+                    placeholderText="dd/mm/yyyy"
+                    dateFormat="dd/MM/yyyy"
+                    className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                  />
+                  {formErrors.dob && (
+                    <p className="text-red-300 text-xs mt-1">
+                      {formErrors.dob}
+                    </p>
+                  )}
                   <div>
                     <input
                       name="address"
@@ -1055,12 +1202,21 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     )}
                   </div>
                 </div>
+                {ageError && (
+                  <p className="text-red-400 font-semibold text-sm mt-2 col-span-2 text-center">
+                    {ageError}
+                  </p>
+                )}
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="mt-3 sm:mt-4 w-full bg-linear-to-r from-blue-600 to-teal-500 text-white py-1.5 sm:py-2 rounded hover:opacity-90 text-xs sm:text-sm"
+                  disabled={loading || ageError !== ""}
+                  className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
+                    ageError
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-linear-to-r from-blue-600 to-teal-500 hover:opacity-90"
+                  }`}
                 >
-                  Submit Details
+                  {loading ? "Submitting..." : "Submit Details"}
                 </button>
               </form>
             ) : showNumberTypeSelection && !isTransferMode ? (
@@ -1219,7 +1375,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   </button>
                 ))}
               </div>
-            ) : showOtpInput ? ( // OTP input only appears for existing numbers
+            ) : showOtpInput ? (
               <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
                 <p className="text-sm sm:text-base">
                   Enter the OTP sent to your existing number:
@@ -1233,12 +1389,22 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   }
                   className="w-full p-2 rounded bg-transparent border border-white/50 text-center text-white text-sm sm:text-base"
                   placeholder="Enter 6-digit OTP"
+                  autoFocus
                 />
                 <button
                   onClick={handleOtpVerify}
-                  className="bg-[#2bb673] text-white px-4 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
+                  disabled={otpCode.length !== 6}
+                  className="bg-[#2bb673] text-white px-8 py-2 rounded hover:opacity-90 disabled:opacity-50 text-sm"
                 >
-                  Verify OTP
+                  {loading ? "Verifying..." : "Verify OTP"}
+                </button>
+
+                <button
+                  onClick={handleResendOtp}
+                  disabled={loading}
+                  className="text-white/80 hover:text-white underline text-sm mt-4 transition-colors disabled:opacity-50"
+                >
+                  Resend OTP
                 </button>
               </div>
             ) : showPayment &&
