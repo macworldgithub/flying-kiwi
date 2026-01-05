@@ -491,7 +491,7 @@ const ChatWindow = () => {
       alert("Please enter your ARN (Account Reference Number)");
       return;
     }
-    
+
     setIsPorting(true);
     setHasSelectedNumber(true);
     setShowNumberButtons(false);
@@ -701,7 +701,15 @@ const ChatWindow = () => {
 
       setOtpVerified(true);
       setShowOtpInput(false);
-      alert("OTP verified successfully! You can now proceed to payment.");
+      addBotMessage(
+        "OTP verified successfully! Please choose a plan to continue."
+      );
+      if (!selectedPlan) {
+        setShowPlans(true);
+      } else {
+        setShowPayment(true);
+      }
+      return;
     } catch (err) {
       console.error(err);
       alert("OTP verification failed. Please try again.");
