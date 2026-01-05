@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import sessionStorage from "redux-persist/es/storage/session";
 
 interface PaymentCardProps {
   custNo: string;
@@ -141,7 +142,9 @@ export const PaymentCard = ({
             //   }
             // }
             // ← Yeh nayi line add karo (prop se pehle, localStorage se baad mein)
-            const email = propEmail || localStorage.getItem("userEmail") || "";
+
+            const rawEmail = await sessionStorage.getItem("userEmail");
+            const email = propEmail || rawEmail || "";
 
             const amount =
               String(planPrice) ||
@@ -170,7 +173,7 @@ export const PaymentCard = ({
               throw new Error(processData.message || "Payment failed");
 
             if (fromChangePlan) {
-              const storedCustNo = localStorage.getItem("custNo");
+              const storedCustNo = sessionStorage.getItem("custNo");
               if (!storedCustNo) throw new Error("Customer number missing");
 
               const updateResponse = await fetch(
