@@ -141,6 +141,8 @@ const ChatWindow = () => {
     state: "",
     postcode: "",
     pin: "",
+    custAuthorityNo: "",
+    custAuthorityType: "",
   });
   const [formErrors, setFormErrors] = useState<any>({});
 
@@ -159,6 +161,8 @@ const ChatWindow = () => {
       "state",
       "postcode",
       "pin",
+      "custAuthorityNo",
+      "custAuthorityType",
     ];
 
     for (let field of requiredFields) {
@@ -183,6 +187,14 @@ const ChatWindow = () => {
     if (formData.pin && !/^\d{4}$/.test(formData.pin)) {
       errors.pin = "PIN must be 4 digits";
       ok = false;
+    }
+
+    if (!formData.custAuthorityNo.trim()) {
+      errors.custAuthorityNo = "Customer Authority Number is required";
+    }
+
+    if (!formData.custAuthorityType) {
+      errors.custAuthorityType = "Please select a Customer Authority Type";
     }
 
     if (formData.dob) {
@@ -210,22 +222,21 @@ const ChatWindow = () => {
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name as keyof typeof formData;
     const { value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value.trim() }));
-    setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
 
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
     if (name === "dob" && value.trim()) {
       const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
       if (match) {
-        const day = parseInt(match[1], 10);
-        const month = parseInt(match[2], 10);
-        const year = parseInt(match[3], 10);
-
+        const [_, day, month, year] = match.map(Number);
         const birthDate = new Date(year, month - 1, day);
         const today = new Date();
-
-        let age = today.getFullYear() - year;
-        const m = today.getMonth() - (month - 1);
-        if (m < 0 || (m === 0 && today.getDate() < day)) {
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
 
@@ -403,12 +414,7 @@ const ChatWindow = () => {
     }
 
     const matches = botText.match(/04\d{8}/g);
-    if (
-      matches?.length === 5 &&
-      !isPorting &&
-      !numberDecisionMade &&
-      !hasSelectedNumber
-    ) {
+    if (matches?.length === 5 && !isPorting && !hasSelectedNumber) {
       setNumberOptions(matches);
       setShowNumberButtons(true);
       // Override bot message
@@ -437,26 +443,26 @@ const ChatWindow = () => {
     setShowConfirmNewNumber(true);
   };
 
-  const confirmNewNumber = (yes: boolean) => {
+  const confirmNewNumber = async (yes: boolean) => {
     setShowConfirmNewNumber(false);
-    if (yes) {
-      setIsPorting(false);
-      setHasSelectedNumber(false);
-      setNumberDecisionMade(true);
-      setSelectedOption("new");
-      addBotMessage(
-        "Thanks, now it's time to choose a number from the selection below"
-      );
 
-      if (numberOptions.length > 0) {
-        setShowNumberButtons(true);
-      } else {
-        handleSend("new number");
-      }
-    } else {
+    if (!yes) {
       setShowNumberTypeSelection(true);
+      return;
     }
+
+    setSelectedOption("new");
+    setIsPorting(false);
+    setHasSelectedNumber(false);
+    setNumberDecisionMade(false);
+
+    addBotMessage(
+      "Thanks, now it's time to choose a number from the selection below."
+    );
+
+    await handleSend("new number");
   };
+
   const handleExistingNumber = () => {
     setShowNumberTypeSelection(false);
     setShowConfirmNewNumber(true);
@@ -485,6 +491,11 @@ const ChatWindow = () => {
       alert("Please enter your ARN (Account Reference Number)");
       return;
     }
+    
+    setIsPorting(true);
+    setHasSelectedNumber(true);
+    setShowNumberButtons(false);
+
     await new Promise((resolve) => setTimeout(resolve, 1500));
     if (!custNo) {
       addBotMessage(
@@ -510,10 +521,6 @@ const ChatWindow = () => {
       setOtpTransactionId(data.data.getOtp.transactionId);
 
       setShowExistingNumberOptions(false);
-      setShowPlans(false);
-      setShowNumberButtons(false);
-      setShowPayment(false);
-      setShowNumberTypeSelection(false);
       setShowOtpInput(true);
       addBotMessage("OTP has been sent. Please enter it to proceed.");
     } catch (err) {
@@ -1051,25 +1058,22 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         const year = date.getFullYear();
                         const newDob = `${day}/${month}/${year}`;
 
+                        // Update form data
                         setFormData((prev) => ({
                           ...prev,
                           dob: newDob,
                         }));
-
                         const birthDate = new Date(
                           year,
                           date.getMonth(),
                           date.getDate()
                         );
                         const today = new Date();
-
                         let age = today.getFullYear() - birthDate.getFullYear();
-                        const monthDiff =
-                          today.getMonth() - birthDate.getMonth();
+                        const m = today.getMonth() - birthDate.getMonth();
                         if (
-                          monthDiff < 0 ||
-                          (monthDiff === 0 &&
-                            today.getDate() < birthDate.getDate())
+                          m < 0 ||
+                          (m === 0 && today.getDate() < birthDate.getDate())
                         ) {
                           age--;
                         }
@@ -1079,9 +1083,8 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                             "You must be at least 18 years old to sign up."
                           );
                         } else {
-                          setAgeError("");
+                          setAgeError(""); // Clear error if now 18+
                         }
-
                         setFormErrors((prev: any) => ({ ...prev, dob: "" }));
                       } else {
                         setFormData((prev) => ({ ...prev, dob: "" }));
@@ -1200,6 +1203,78 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     {formErrors.pin && (
                       <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
                         {formErrors.pin}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="custAuthorityNo"
+                      value={formData.custAuthorityNo}
+                      onChange={(e) => {
+                        const value = e.target.value.substring(0, 20);
+                        setFormData((prev) => ({
+                          ...prev,
+                          custAuthorityNo: String(value),
+                        }));
+                        setFormErrors((prev: any) => ({
+                          ...prev,
+                          custAuthorityNo: "",
+                        }));
+                      }}
+                      placeholder="Customer Authority Number"
+                      maxLength={20}
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.custAuthorityNo && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.custAuthorityNo}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <select
+                      name="custAuthorityType"
+                      value={formData.custAuthorityType}
+                      onChange={(e) => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          custAuthorityType: e.target.value,
+                        }));
+                        setFormErrors((prev: any) => ({
+                          ...prev,
+                          custAuthorityType: "",
+                        }));
+                      }}
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                      required
+                    >
+                      <option value="" className="text-black">
+                        Customer Authority Type
+                      </option>
+                      <option value="AC" className="text-black">
+                        Customer Number and Account Password
+                      </option>
+                      <option value="DL" className="text-black">
+                        Driver License Number
+                      </option>
+                      <option value="PA" className="text-black">
+                        Passport Number
+                      </option>
+                      <option value="PI" className="text-black">
+                        Photo ID Type
+                      </option>
+                      <option value="PN" className="text-black">
+                        Pensioner Card Number
+                      </option>
+                      <option value="UB" className="text-black">
+                        Utility Bill
+                      </option>
+                    </select>
+
+                    {formErrors.custAuthorityType && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.custAuthorityType}
                       </p>
                     )}
                   </div>
