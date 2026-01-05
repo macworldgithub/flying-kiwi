@@ -859,7 +859,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
   };
 
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-[#05263D] overflow-hidden">
+    <div className="relative flex items-center justify-center min-h-screen bg-[#05263D] overflow-hidden mt-18">
       {/* Background layers */}
       <div
         className="absolute inset-0 bg-cover bg-center blur-sm opacity-60"

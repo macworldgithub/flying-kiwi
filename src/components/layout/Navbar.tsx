@@ -474,7 +474,7 @@ export const Navbar: React.FC = () => {
               {usageData && (
                 <div className="space-y-6 md:space-y-8">
                   {/* Current Plan Section */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-6 sm:p-7 md:p-8 border-2 border-blue-200">
+                  <div className="from-blue-50 to-indigo-50 rounded-3xl p-6 sm:p-7 md:p-8 border-2 border-blue-200">
                     <h3 className="text-lg sm:text-xl font-bold mb-4 text-indigo-800">
                       Current Plan
                     </h3>
