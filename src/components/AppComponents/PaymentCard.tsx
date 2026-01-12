@@ -125,7 +125,7 @@ export const PaymentCard = ({
             if (!methodResponse.ok)
               throw new Error(methodData.message || "Payment method failed");
 
-            const paymentId = methodData.data.paymentId;
+            // const paymentId = methodData.data.paymentId;
             // let email = "";
             // if (typeof window !== "undefined") {
             //   const storedRoot = localStorage.getItem(
@@ -143,34 +143,34 @@ export const PaymentCard = ({
             // }
             // ← Yeh nayi line add karo (prop se pehle, localStorage se baad mein)
 
-            const rawEmail = await sessionStorage.getItem("userEmail");
-            const email = propEmail || rawEmail || "";
+            // const rawEmail = await sessionStorage.getItem("userEmail");
+            // const email = propEmail || rawEmail || "";
 
-            const amount =
-              String(planPrice) ||
-              String(localStorage.getItem("planPrice") || 0);
-            const comment = `Ref-${Math.random().toString(36).substring(2, 8)}`;
+            // const amount =
+            //   String(planPrice) ||
+            //   String(localStorage.getItem("planPrice") || 0);
+            // const comment = `Ref-${Math.random().toString(36).substring(2, 8)}`;
 
-            const processPayload = {
-              custNo,
-              amount,
-              paymentId,
-              email,
-              comment,
-            };
+            // const processPayload = {
+            //   custNo,
+            //   amount,
+            //   paymentId,
+            //   email,
+            //   comment,
+            // };
 
-            const processResponse = await fetch(
-              "https://bele.omnisuiteai.com/api/v1/payments/process",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(processPayload),
-              }
-            );
+            // const processResponse = await fetch(
+            //   "https://bele.omnisuiteai.com/api/v1/payments/process",
+            //   {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify(processPayload),
+            //   }
+            // );
 
-            const processData = await processResponse.json();
-            if (!processResponse.ok)
-              throw new Error(processData.message || "Payment failed");
+            // const processData = await processResponse.json();
+            // if (!processResponse.ok)
+            //   throw new Error(processData.message || "Payment failed");
 
             if (fromChangePlan) {
               const storedCustNo = sessionStorage.getItem("custNo");
