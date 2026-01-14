@@ -77,12 +77,16 @@
     color: grey;
   }
 
-  :where(.css-dev-only-do-not-override-7ny38l).ant-menu-light.ant-menu-horizontal
+  :where(
+      .css-dev-only-do-not-override-7ny38l
+    ).ant-menu-light.ant-menu-horizontal
     > .ant-menu-item-selected,
   :where(.css-dev-only-do-not-override-7ny38l).ant-menu-light
     > .ant-menu.ant-menu-horizontal
     > .ant-menu-item-selected,
-  :where(.css-dev-only-do-not-override-7ny38l).ant-menu-light.ant-menu-horizontal
+  :where(
+      .css-dev-only-do-not-override-7ny38l
+    ).ant-menu-light.ant-menu-horizontal
     > .ant-menu-submenu-selected,
   :where(.css-dev-only-do-not-override-7ny38l).ant-menu-light
     > .ant-menu.ant-menu-horizontal
@@ -166,12 +170,33 @@
 }
 
 @keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradientMove 12s ease infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
 }

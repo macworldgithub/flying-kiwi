@@ -4,7 +4,7 @@ import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatDob, formatDobToISO, isDeleteIntent } from "@/lib/utils";
 import sessionStorage from "redux-persist/es/storage/session";
-import DatePicker from "react-datepicker";
+// import DatePicker from "react-datepicker";
 
 interface Plan {
   _id: string;
@@ -73,6 +73,21 @@ const ChatWindow = () => {
 
   const [numberDecisionMade, setNumberDecisionMade] = useState(false);
   const [ageError, setAgeError] = useState("");
+  const [flowCompleted, setFlowCompleted] = useState(false);
+  const [typingDots, setTypingDots] = useState("");
+
+  useEffect(() => {
+    if (!loading) {
+      setTypingDots("");
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setTypingDots((prev) => (prev.length < 3 ? prev + "." : ""));
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [loading]);
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -197,22 +212,68 @@ const ChatWindow = () => {
       errors.custAuthorityType = "Please select a Customer Authority Type";
     }
 
-    if (formData.dob) {
-      const [day, month, year] = formData.dob.split("/").map(Number);
-      const birthDate = new Date(year, month - 1, day);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
+    // if (formData.dob) {
+    //   const [day, month, year] = formData.dob.split("/").map(Number);
+    //   const birthDate = new Date(year, month - 1, day);
+    //   const today = new Date();
+    //   let age = today.getFullYear() - birthDate.getFullYear();
+    //   const m = today.getMonth() - birthDate.getMonth();
+    //   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    //     age--;
+    //   }
 
-      if (age < 18) {
-        setAgeError("You must be at least 18 years old to sign up.");
+    //   if (age < 18) {
+    //     setAgeError("You must be at least 18 years old to sign up.");
+    //     ok = false;
+    //   } else {
+    //     setAgeError("");
+    //   }
+    // }
+    if (formData.dob) {
+      const match = formData.dob.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!match) {
+        errors.dob = "Please enter date in dd/mm/yyyy format";
         ok = false;
       } else {
-        setAgeError("");
+        const [, day, month, year] = match;
+        const birthDate = new Date(
+          Number(year),
+          Number(month) - 1,
+          Number(day)
+        );
+
+        // Invalid date check (e.g. 31/02/2000, 00/01/2000 etc.)
+        if (
+          isNaN(birthDate.getTime()) ||
+          Number(day) < 1 ||
+          Number(day) > 31 ||
+          Number(month) < 1 ||
+          Number(month) > 12 ||
+          Number(year) < 1900 ||
+          Number(year) > new Date().getFullYear()
+        ) {
+          errors.dob = "Invalid date";
+          ok = false;
+        } else {
+          // Age calculation only when date is valid
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+
+          if (age < 18) {
+            setAgeError("You must be at least 18 years old to sign up.");
+            ok = false;
+          } else {
+            setAgeError("");
+          }
+        }
       }
+    } else {
+      errors.dob = "Date of birth is required";
+      ok = false;
     }
 
     setFormErrors(errors);
@@ -228,10 +289,39 @@ const ChatWindow = () => {
       [name]: value,
     }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
-    if (name === "dob" && value.trim()) {
-      const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-      if (match) {
-        const [_, day, month, year] = match.map(Number);
+    // if (name === "dob" && value.trim()) {
+    //   const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    //   if (match) {
+    //     const [_, day, month, year] = match.map(Number);
+    //     const birthDate = new Date(year, month - 1, day);
+    //     const today = new Date();
+    //     let age = today.getFullYear() - birthDate.getFullYear();
+    //     const m = today.getMonth() - birthDate.getMonth();
+    //     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    //       age--;
+    //     }
+
+    //     if (age < 18) {
+    //       setAgeError("You must be at least 18 years old to sign up.");
+    //     } else {
+    //       setAgeError("");
+    //     }
+    //   }
+    // }
+    if (name === "dob") {
+      const value = e.target.value;
+      // Allow only digits and one '/'
+      if (
+        value.length <= 10 &&
+        (/\d/.test(value.slice(-1)) || value.endsWith("/"))
+      ) {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
+      }
+
+      // Real-time age check only when format is complete
+      if (value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)) {
+        const [, day, month, year] = value.split("/").map(Number);
         const birthDate = new Date(year, month - 1, day);
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
@@ -239,12 +329,13 @@ const ChatWindow = () => {
         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
-
         if (age < 18) {
           setAgeError("You must be at least 18 years old to sign up.");
         } else {
           setAgeError("");
         }
+      } else {
+        setAgeError(""); // Clear error if incomplete
       }
     }
   };
@@ -418,7 +509,7 @@ const ChatWindow = () => {
       setNumberOptions(matches);
       setShowNumberButtons(true);
       // Override bot message
-      addBotMessage("Please choose a number from the selection below");
+      // addBotMessage("Please choose a number from the selection below");
       return;
     }
     // Only add bot message if it's not empty
@@ -492,19 +583,23 @@ const ChatWindow = () => {
       return;
     }
 
-    setIsPorting(true);
-    setHasSelectedNumber(true);
-    setShowNumberButtons(false);
-
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    if (!custNo) {
-      addBotMessage(
-        "We're having trouble fetching your customer ID. Please try again in a moment."
-      );
-      return;
-    }
+    setLoading(true);
 
     try {
+      localStorage.setItem("portingNumber", existingPhone);
+
+      setIsPorting(true);
+      setHasSelectedNumber(true);
+      setShowNumberButtons(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      if (!custNo) {
+        addBotMessage(
+          "We're having trouble fetching your customer ID. Please try again in a moment."
+        );
+        return;
+      }
       const res = await fetch("https://bele.omnisuiteai.com/api/v1/auth/otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -526,6 +621,8 @@ const ChatWindow = () => {
     } catch (err) {
       console.error(err);
       addBotMessage("Failed to send OTP. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -611,6 +708,8 @@ const ChatWindow = () => {
     setSelectedSim(num);
     setHasSelectedNumber(true);
     setShowNumberButtons(false);
+    setShowInitialOptions(false);
+    setIsTypingEnabled(false);
 
     setChat((prev) => [
       ...prev,
@@ -820,8 +919,37 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
           }),
         },
       ]);
+      setFlowCompleted(true);
+      setShowInitialOptions(false);
+      setIsTypingEnabled(false);
     } catch (err) {
-      handleSend("Activation failed. Please try again.");
+      console.error("Activation error:", err);
+
+      const failureMessage = `Unfortunately, we couldn't complete your SIM activation.
+
+This can sometimes happen if:
+• Some of the details provided were incorrect
+• There was a temporary system issue
+• The selected number or SIM could not be validated
+
+No worries — you can try again or choose one of the options below, and I’ll help you from there.`;
+
+      setChat((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          type: "bot",
+          text: failureMessage,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+
+      setFlowCompleted(false);
+      setShowInitialOptions(true);
+      setIsTypingEnabled(false);
     }
   };
 
@@ -934,17 +1062,21 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
           ))}
 
           {loading && (
-            <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
-              <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden">
+            <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 animate-fade-in">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden shadow-sm">
                 <img
                   src="/images/bot.png"
                   alt="Loading Avatar"
                   className="w-full h-full rounded-full object-cover"
                 />
               </div>
-              <div className="bg-white rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
-                <p className="text-[#0E3B5C] text-xs sm:text-xs md:text-sm leading-relaxed">
-                  Typing...
+
+              <div className="bg-white rounded-2xl px-4 py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
+                <p className="text-[#0E3B5C] text-xs sm:text-sm font-medium">
+                  Flying Kiwi Assistant
+                </p>
+                <p className="text-[#0E3B5C] text-xs sm:text-sm leading-relaxed">
+                  Preparing the next step{typingDots}
                 </p>
               </div>
             </div>
@@ -1052,7 +1184,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       </p>
                     )}
                   </div>
-                  <DatePicker
+                  {/* <DatePicker
                     selected={
                       formData.dob ? parseDateFromDDMMYYYY(formData.dob) : null
                     }
@@ -1107,7 +1239,24 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     <p className="text-red-300 text-xs mt-1">
                       {formErrors.dob}
                     </p>
-                  )}
+                  )} */}
+                  <div>
+                    <input
+                      type="text"
+                      name="dob"
+                      value={formData.dob}
+                      onChange={handleFormChange}
+                      placeholder="dd/mm/yyyy"
+                      maxLength={10}
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.dob && (
+                      <p className="text-red-300 text-xs mt-0.5">
+                        {formErrors.dob}
+                      </p>
+                    )}
+                  </div>
                   <div>
                     <input
                       name="address"
@@ -1215,6 +1364,48 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     )}
                   </div>
                   <div>
+                    <select
+                      name="custAuthorityType"
+                      value={formData.custAuthorityType}
+                      onChange={(e) => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          custAuthorityType: e.target.value,
+                        }));
+                        setFormErrors((prev: any) => ({
+                          ...prev,
+                          custAuthorityType: "",
+                        }));
+                      }}
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                      required
+                    >
+                      <option
+                        value=""
+                        disabled
+                        hidden
+                        className="text-gray-400"
+                      >
+                        ID Type
+                      </option>
+                      <option value="DL" className="text-black">
+                        Driver License
+                      </option>
+                      <option value="PA" className="text-black">
+                        Passport
+                      </option>
+                      <option value="PI" className="text-black">
+                        Proof of age Card
+                      </option>
+                    </select>
+
+                    {formErrors.custAuthorityType && (
+                      <p className=" text-xs mt-0.5 sm:mt-1">
+                        {formErrors.custAuthorityType}
+                      </p>
+                    )}
+                  </div>
+                  <div>
                     <input
                       name="custAuthorityNo"
                       value={formData.custAuthorityNo}
@@ -1240,52 +1431,6 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       </p>
                     )}
                   </div>
-                  <div>
-                    <select
-                      name="custAuthorityType"
-                      value={formData.custAuthorityType}
-                      onChange={(e) => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          custAuthorityType: e.target.value,
-                        }));
-                        setFormErrors((prev: any) => ({
-                          ...prev,
-                          custAuthorityType: "",
-                        }));
-                      }}
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
-                      required
-                    >
-                      <option value="" className="text-black">
-                        Customer Authority Type
-                      </option>
-                      <option value="AC" className="text-black">
-                        Customer Number and Account Password
-                      </option>
-                      <option value="DL" className="text-black">
-                        Driver License Number
-                      </option>
-                      <option value="PA" className="text-black">
-                        Passport Number
-                      </option>
-                      <option value="PI" className="text-black">
-                        Photo ID Type
-                      </option>
-                      <option value="PN" className="text-black">
-                        Pensioner Card Number
-                      </option>
-                      <option value="UB" className="text-black">
-                        Utility Bill
-                      </option>
-                    </select>
-
-                    {formErrors.custAuthorityType && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.custAuthorityType}
-                      </p>
-                    )}
-                  </div>
                 </div>
                 {ageError && (
                   <p className="text-red-400 font-semibold text-sm mt-2 col-span-2 text-center">
@@ -1298,7 +1443,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
                     ageError
                       ? "bg-gray-500 cursor-not-allowed"
-                      : "bg-linear-to-r from-blue-600 to-teal-500 hover:opacity-90"
+                      : "bg-[#2bb673] hover:opacity-90"
                   }`}
                 >
                   {loading ? "Submitting..." : "Submit Details"}
@@ -1397,7 +1542,11 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     <input
                       type="text"
                       value={arn}
-                      onChange={(e) => setArn(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setArn(value);
+                        localStorage.setItem("arn", value);
+                      }}
                       placeholder="Enter ARN (Account Reference Number)"
                       className="w-full p-2 rounded bg-transparent border border-white/50 text-white text-center"
                     />
@@ -1407,12 +1556,13 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                 <button
                   onClick={handleExistingNumberSubmit}
                   disabled={
+                    loading ||
                     !existingPhone.match(/^04\d{8}$/) ||
                     (existingNumberType === "postpaid" && !arn.trim())
                   }
                   className="w-full bg-linear-to-r from-blue-600 to-teal-500 text-white py-2 rounded hover:opacity-90 disabled:opacity-50"
                 >
-                  Continue
+                  {loading ? "Processing..." : "Continue"}
                 </button>
               </div>
             ) : showConfirmExistingNumber ? (
@@ -1520,7 +1670,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   if (success) handleActivateOrder();
                 }}
               />
-            ) : (
+            ) : showInitialOptions && !flowCompleted ? (
               <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">
                 <input
                   type="text"
@@ -1554,7 +1704,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   </svg>
                 </button>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
