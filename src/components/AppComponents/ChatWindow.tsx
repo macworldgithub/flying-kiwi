@@ -1443,7 +1443,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
                     ageError
                       ? "bg-gray-500 cursor-not-allowed"
-                      : "bg-[#2bb673] hover:opacity-90"
+                      : "bg-linear-to-r from-blue-600 to-teal-500 hover:opacity-90"
                   }`}
                 >
                   {loading ? "Submitting..." : "Submit Details"}
