@@ -23,6 +23,7 @@ import { logout } from "@/reduxSlices/loginSlice";
 import DeleteCustomerModal from "../AppComponents/DeleteCustomerModal";
 import { DeleteCustomerApi } from "@/app/api/auth";
 import { ProfileDropdown } from "../AppComponents/ProfileDropdown";
+import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -48,6 +49,8 @@ export const Navbar: React.FC = () => {
   const [message, setMessage] = useState("");
 
   const router = useRouter();
+  const pathname = usePathname();
+  const isChatWindow = pathname === "/chat-window";
   const dispatch = useDispatch<AppDispatch>();
   const { access_token } = useSelector((state: RootState) => state.login);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -119,19 +122,19 @@ export const Navbar: React.FC = () => {
               Authorization: `Bearer ${token}`,
               accept: "application/json",
             },
-          }
+          },
         ),
         fetch(
           `https://bele.omnisuiteai.com/api/v1/customers/${custNo}/balance/mobile?lineSeqNo=1`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         ),
         fetch(
           `https://bele.omnisuiteai.com/api/v1/customers/${custNo}/unbilled-summary`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         ),
       ]);
 
@@ -144,7 +147,7 @@ export const Navbar: React.FC = () => {
         !serviceData.data?.services?.serviceDetails?.length
       ) {
         setUsageError(
-          "You don't have an active plan yet. Please choose a plan first!"
+          "You don't have an active plan yet. Please choose a plan first!",
         );
         setUsageLoading(false);
         return;
@@ -265,14 +268,15 @@ export const Navbar: React.FC = () => {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                label={link.label}
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              />
-            ))}
+            {!isChatWindow &&
+              NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                  className="text-gray-700 hover:text-blue-600 font-medium"
+                />
+              ))}
           </nav>
 
           {/* Right Buttons */}
@@ -310,15 +314,15 @@ export const Navbar: React.FC = () => {
             >
               <div className="px-6 py-8 space-y-6">
                 {/* 1. Main Navigation Links - Pehle aayenge */}
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    label={link.label}
-                    className="block text-lg font-medium text-gray-800 hover:text-indigo-600 transition-colors py-2"
-                  />
-                ))}
-
+                {!isChatWindow &&
+                  NAV_LINKS.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      label={link.label}
+                      className="block text-lg font-medium text-gray-800 hover:text-indigo-600 transition-colors py-2"
+                    />
+                  ))}
                 {/* 2. Divider */}
                 <div className="border-t border-gray-200" />
 
@@ -404,7 +408,7 @@ export const Navbar: React.FC = () => {
       </header>
 
       {/* Check Usage Modal */}
-  
+
       <AnimatePresence>
         {showUsageModal && (
           <motion.div

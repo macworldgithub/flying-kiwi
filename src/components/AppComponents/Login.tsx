@@ -80,16 +80,14 @@ export const Login = () => {
                 <FormInput
                   label="Email"
                   type="email"
-                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => dispatch(setEmail(e.target.value))}
                   icon={<Mail size={18} color="black" />}
                 />
 
                 <FormInput
-                  label="Create your PIN no"
+                  label="PIN"
                   type="password"
-                  placeholder="Enter your PIN"
                   value={pin}
                   onChange={(e) => dispatch(setPin(e.target.value))}
                   icon={<KeyRound size={18} color="black" />}

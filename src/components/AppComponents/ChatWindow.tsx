@@ -340,12 +340,6 @@ const ChatWindow = () => {
     }
   };
 
-  const parseDateFromDDMMYYYY = (dateStr: string) => {
-    if (!dateStr) return null;
-    const [day, month, year] = dateStr.split("/").map(Number);
-    return new Date(year, month - 1, day);
-  };
-
   const handleFormSubmit = async (e: any) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -974,7 +968,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
     } else if (option === "Account, billing or Technical Problem") {
       setIsTypingEnabled(true);
       addBotMessage(
-        "Please describe your account, billing, or technical issue and I'll help you resolve it."
+        "Please describe your account, billing, or technical issue and I'll help you resolve it.",
       );
     } else if (option === "transfer-number") {
       setIsTransferMode(true);
@@ -1000,6 +994,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
         {/* Header */}
 
         <div className="flex justify-between items-center p-3 sm:p-4 bg-linear-to-r from-[#A9D7F1] via-[#F9F4F8] to-[#F8CFF3] shadow-md">
+          {/* Left: Main Logo */}
           <div className="flex items-center gap-2">
             <img
               src="/images/logo.png"
@@ -1007,12 +1002,23 @@ No worries — you can try again or choose one of the options below, and I’ll 
               className="hidden sm:block h-8 sm:h-10 w-auto drop-shadow-md"
             />
           </div>
-          <button
-            onClick={() => router.push("/")}
-            className="text-lg sm:text-xl font-bold hover:text-gray-600 transition-colors"
-          >
-            ×
-          </button>
+
+          {/* Right: Just Mobile Logo + Close */}
+          <div className="flex items-center gap-3">
+            <img
+              src="/images/just-mobile-logo.png"
+              alt="Just Mobile"
+              className="h-10 sm:h-12 w-auto drop-shadow-md"
+            />
+
+            <button
+              onClick={() => router.push("/")}
+              className="text-lg sm:text-xl font-bold hover:text-gray-600 transition-colors"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* Chat body */}
@@ -1076,7 +1082,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   Flying Kiwi Assistant
                 </p>
                 <p className="text-[#0E3B5C] text-xs sm:text-sm leading-relaxed">
-                  Preparing the next step{typingDots}
+                  Choose and option below{typingDots}
                 </p>
               </div>
             </div>
@@ -1099,7 +1105,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                 <button
                   onClick={() =>
                     handleInitialOptionSelect(
-                      "Account, billing or Technical Problem"
+                      "Account, billing or Technical Problem",
                     )
                   }
                   className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-3 rounded-lg hover:opacity-90 transition-opacity text-sm sm:text-base font-medium"
@@ -1120,7 +1126,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
             {showDetailsForm ? (
               <form
                 onSubmit={handleFormSubmit}
-                className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-white/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
+                className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-black/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
               >
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                   <div>
@@ -1129,7 +1135,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       value={formData.firstName}
                       onChange={handleFormChange}
                       placeholder="First Name"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.firstName && (
@@ -1144,7 +1150,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       value={formData.surname}
                       onChange={handleFormChange}
                       placeholder="Surname"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.surname && (
@@ -1160,7 +1166,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       onChange={handleFormChange}
                       placeholder="Email"
                       type="email"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.email && (
@@ -1175,7 +1181,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       value={formData.phone}
                       onChange={handleFormChange}
                       placeholder="Phone (e.g., 0412345678)"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.phone && (
@@ -1248,7 +1254,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       onChange={handleFormChange}
                       placeholder="dd/mm/yyyy"
                       maxLength={10}
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.dob && (
@@ -1263,7 +1269,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       value={formData.address}
                       onChange={handleFormChange}
                       placeholder="Address"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.address && (
@@ -1278,7 +1284,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       value={formData.suburb}
                       onChange={handleFormChange}
                       placeholder="Suburb"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.suburb && (
@@ -1302,10 +1308,10 @@ No worries — you can try again or choose one of the options below, and I’ll 
                             state: "",
                           }));
                         }}
-                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black border border-white/50 text-xs sm:text-sm focus:outline-none"
                         required
                       >
-                        <option value="" className="text-black">
+                        <option value="" className="text-black font-medium">
                           Select State
                         </option>
 
@@ -1313,7 +1319,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                           <option
                             key={index}
                             value={state.code}
-                            className="text-black"
+                            className="text-black font-medium"
                           >
                             {state.name ?? state.code}
                           </option>
@@ -1338,7 +1344,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       value={formData.postcode}
                       onChange={handleFormChange}
                       placeholder="Postcode (4 digits)"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.postcode && (
@@ -1352,9 +1358,9 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       name="pin"
                       value={formData.pin}
                       onChange={handleFormChange}
-                      placeholder="4-digit PIN"
+                      placeholder="Create a 4-digit PIN"
                       maxLength={4}
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.pin && (
@@ -1377,7 +1383,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                           custAuthorityType: "",
                         }));
                       }}
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black border border-white/50 text-xs sm:text-sm focus:outline-none"
                       required
                     >
                       <option
@@ -1388,13 +1394,13 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       >
                         ID Type
                       </option>
-                      <option value="DL" className="text-black">
+                      <option value="DL" className="text-black ">
                         Driver License
                       </option>
-                      <option value="PA" className="text-black">
+                      <option value="PA" className="text-black ">
                         Passport
                       </option>
-                      <option value="PI" className="text-black">
+                      <option value="PI" className="text-black ">
                         Proof of age Card
                       </option>
                     </select>
@@ -1422,7 +1428,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       }}
                       placeholder="Customer Authority Number"
                       maxLength={20}
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.custAuthorityNo && (
@@ -1523,7 +1529,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                     value={existingPhone}
                     onChange={(e) =>
                       setExistingPhone(
-                        e.target.value.replace(/\D/g, "").substring(0, 10)
+                        e.target.value.replace(/\D/g, "").substring(0, 10),
                       )
                     }
                     placeholder="Enter your 10-digit mobile number (04xxxxxxxx)"
@@ -1670,7 +1676,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   if (success) handleActivateOrder();
                 }}
               />
-            ) : showInitialOptions && !flowCompleted ? (
+            ) : isTypingEnabled && !flowCompleted ? (
               <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">
                 <input
                   type="text"
@@ -1678,17 +1684,13 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                   placeholder="Message..."
-                  disabled={!isTypingEnabled || showInitialOptions}
-                  className={`flex-1 bg-transparent text-white placeholder-white/70 text-xs sm:text-sm focus:outline-none ${
-                    !isTypingEnabled || showInitialOptions
-                      ? "cursor-not-allowed opacity-50"
-                      : ""
-                  }`}
+                  disabled={loading}
+                  className="flex-1 bg-transparent text-white placeholder-white/70 text-xs sm:text-sm focus:outline-none"
                 />
 
                 <button
                   onClick={sendMessage}
-                  disabled={loading || !isTypingEnabled || showInitialOptions}
+                  disabled={loading}
                   className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-linear-to-r from-blue-600 to-teal-500 text-white hover:opacity-90 disabled:opacity-50"
                 >
                   <svg
