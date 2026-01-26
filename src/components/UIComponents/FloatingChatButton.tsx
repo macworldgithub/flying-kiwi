@@ -2,17 +2,21 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 export const FloatingChatButton = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const [hovered, setHovered] = useState(false);
 
   const handleChatClick = () => {
     router.push("/chat-window");
   };
 
+  if (pathname === "/chat-window") {
+    return null;
+  }
   return (
     <motion.div
       className="fixed bottom-6 right-6 z-50"
