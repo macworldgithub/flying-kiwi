@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import sessionStorage from "redux-persist/es/storage/session";
 
 interface PaymentCardProps {
   custNo: string;
@@ -31,7 +32,7 @@ export const PaymentCard = ({
       if (!existingScript) {
         const script = document.createElement("script");
         script.src =
-          "https://api.quickstream.westpac.com.au/rest/v1/quickstream-api-1.0.min.js";
+          "https://api.quickstream.support.qvalent.com/rest/v1/quickstream-api-1.0.min.js";
         script.id = "quickstream-js";
         script.async = true;
         script.onload = initQuickstream;
@@ -49,12 +50,14 @@ export const PaymentCard = ({
 
       window.QuickstreamAPI.init({
         publishableApiKey:
-          "TIAB_PUB_sawvcp2cgmdfiyehcysqpe6qh6ajk4pbhgasz3t9tetu7t3r9p767ygsmmxm",
+          // "TIAB_PUB_sawvcp2cgmdfiyehcysqpe6qh6ajk4pbhgasz3t9tetu7t3r9p767ygsmmxm",
+          // "TIAB_PUB_6qmasp5p4aknyy4nys55nsndtuirjfe5sc2dcujrzcvnpcx4i8hc2pkjvi4w",
+          "TIAB_PUB_6qmasp5p4aknyy4nys55nsndtuirjfe5sc2dcujrzcvnpcx4i8hc2pkjvi4w",
       });
 
       let trustedFrame: any = null;
       const submitBtn = document.getElementById(
-        "submitBtn"
+        "submitBtn",
       ) as HTMLButtonElement;
       const form = document.getElementById("payment-form") as HTMLFormElement;
 
@@ -86,7 +89,7 @@ export const PaymentCard = ({
           }
           trustedFrame = data.trustedFrame;
           submitBtn.disabled = false;
-        }
+        },
       );
 
       form.onsubmit = async (e) => {
@@ -112,19 +115,19 @@ export const PaymentCard = ({
             if (!token) throw new Error("No token returned");
 
             const methodResponse = await fetch(
-              "https://bele.omnisuiteai.com/api/v1/payments/methods",
+              "https://backend-bele.omnisuiteai.com/api/v1/payments/methods",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ custNo, paymentTokenId: token }),
-              }
+              },
             );
 
             const methodData = await methodResponse.json();
             if (!methodResponse.ok)
               throw new Error(methodData.message || "Payment method failed");
 
-            const paymentId = methodData.data.paymentId;
+            // const paymentId = methodData.data.paymentId;
             // let email = "";
             // if (typeof window !== "undefined") {
             //   const storedRoot = localStorage.getItem(
@@ -141,45 +144,47 @@ export const PaymentCard = ({
             //   }
             // }
             // ← Yeh nayi line add karo (prop se pehle, localStorage se baad mein)
-            const email = propEmail || localStorage.getItem("userEmail") || "";
 
-            const amount =
-              String(planPrice) ||
-              String(localStorage.getItem("planPrice") || 0);
-            const comment = `Ref-${Math.random().toString(36).substring(2, 8)}`;
+            // const rawEmail = await sessionStorage.getItem("userEmail");
+            // const email = propEmail || rawEmail || "";
 
-            const processPayload = {
-              custNo,
-              amount,
-              paymentId,
-              email,
-              comment,
-            };
+            // const amount =
+            //   String(planPrice) ||
+            //   String(localStorage.getItem("planPrice") || 0);
+            // const comment = `Ref-${Math.random().toString(36).substring(2, 8)}`;
 
-            const processResponse = await fetch(
-              "https://bele.omnisuiteai.com/api/v1/payments/process",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(processPayload),
-              }
-            );
+            // const processPayload = {
+            //   custNo,
+            //   amount,
+            //   paymentId,
+            //   email,
+            //   comment,
+            // };
 
-            const processData = await processResponse.json();
-            if (!processResponse.ok)
-              throw new Error(processData.message || "Payment failed");
+            // const processResponse = await fetch(
+            //   "https://backend-bele.omnisuiteai.com/api/v1/payments/process",
+            //   {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify(processPayload),
+            //   }
+            // );
+
+            // const processData = await processResponse.json();
+            // if (!processResponse.ok)
+            //   throw new Error(processData.message || "Payment failed");
 
             if (fromChangePlan) {
-              const storedCustNo = localStorage.getItem("custNo");
+              const storedCustNo = sessionStorage.getItem("custNo");
               if (!storedCustNo) throw new Error("Customer number missing");
 
               const updateResponse = await fetch(
-                `https://bele.omnisuiteai.com/api/v1/orders/${storedCustNo}/plan`,
+                `https://backend-bele.omnisuiteai.com/api/v1/orders/${storedCustNo}/plan`,
                 {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ planNo: String(planNo) }),
-                }
+                },
               );
 
               const updateData = await updateResponse.json();

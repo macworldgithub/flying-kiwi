@@ -23,6 +23,7 @@ import { logout } from "@/reduxSlices/loginSlice";
 import DeleteCustomerModal from "../AppComponents/DeleteCustomerModal";
 import { DeleteCustomerApi } from "@/app/api/auth";
 import { ProfileDropdown } from "../AppComponents/ProfileDropdown";
+import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -40,7 +41,7 @@ export const Navbar: React.FC = () => {
   const [usageLoading, setUsageLoading] = useState(false);
   const [usageError, setUsageError] = useState("");
   const [usageData, setUsageData] = useState<any>(null);
-
+  console.log(usageData, "usageData");
   const [oldPin, setOldPin] = useState("");
   const [newPin, setNewPin] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,9 +49,21 @@ export const Navbar: React.FC = () => {
   const [message, setMessage] = useState("");
 
   const router = useRouter();
+  const pathname = usePathname();
+  const isChatWindow = pathname === "/chat-window";
   const dispatch = useDispatch<AppDispatch>();
   const { access_token } = useSelector((state: RootState) => state.login);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [plansLoading, setPlansLoading] = useState(false);
+  const [plansError, setPlansError] = useState("");
+
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  console.log(selectedPlan, "hello");
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [confirmError, setConfirmError] = useState("");
 
   useEffect(() => {
     const token = access_token || localStorage.getItem("access_token");
@@ -113,25 +126,25 @@ export const Navbar: React.FC = () => {
     try {
       const [serviceRes, mobileBalanceRes, unbilledRes] = await Promise.all([
         fetch(
-          `https://bele.omnisuiteai.com/api/v1/customers/${custNo}/services`,
+          `https://backend-bele.omnisuiteai.com/api/v1/customers/${custNo}/services`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
               accept: "application/json",
             },
-          }
+          },
         ),
         fetch(
-          `https://bele.omnisuiteai.com/api/v1/customers/${custNo}/balance/mobile?lineSeqNo=1`,
+          `https://backend-bele.omnisuiteai.com/api/v1/customers/${custNo}/balance/mobile?lineSeqNo=1`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         ),
         fetch(
-          `https://bele.omnisuiteai.com/api/v1/customers/${custNo}/unbilled-summary`,
+          `https://backend-bele.omnisuiteai.com/api/v1/customers/${custNo}/unbilled-summary`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         ),
       ]);
 
@@ -144,7 +157,7 @@ export const Navbar: React.FC = () => {
         !serviceData.data?.services?.serviceDetails?.length
       ) {
         setUsageError(
-          "You don't have an active plan yet. Please choose a plan first!"
+          "You don't have an active plan yet. Please choose a plan first!",
         );
         setUsageLoading(false);
         return;
@@ -201,17 +214,20 @@ export const Navbar: React.FC = () => {
     setStatus("idle");
 
     try {
-      const res = await fetch("https://bele.omnisuiteai.com/auth/change-pin", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          accept: "*/*",
-          Authorization: `Bearer ${
-            access_token || localStorage.getItem("access_token")
-          }`,
+      const res = await fetch(
+        "https://backend-bele.omnisuiteai.com/auth/change-pin",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "*/*",
+            Authorization: `Bearer ${
+              access_token || localStorage.getItem("access_token")
+            }`,
+          },
+          body: JSON.stringify({ oldPin, newPin }),
         },
-        body: JSON.stringify({ oldPin, newPin }),
-      });
+      );
 
       const data = await res.json();
 
@@ -248,6 +264,78 @@ export const Navbar: React.FC = () => {
       });
   };
 
+  const fetchPlans = async () => {
+    setPlansLoading(true);
+    setPlansError("");
+    try {
+      const res = await fetch(
+        "https://backend-bele.omnisuiteai.com/api/v1/plans",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            accept: "application/json",
+          },
+        },
+      );
+      const data = await res.json();
+
+      if (!res.ok || !data.data) {
+        setPlansError("Failed to fetch plans.");
+        return;
+      }
+
+      setPlans(data.data);
+    } catch (err) {
+      console.error(err);
+      setPlansError("Network error while fetching plans.");
+    } finally {
+      setPlansLoading(false);
+    }
+  };
+
+  const handleUpgradePlan = async (planNo: string | number) => {
+    if (!token || !selectedPlan) return;
+
+    setConfirmLoading(true);
+    setConfirmError("");
+
+    try {
+      const res = await fetch(
+        `https://backend-bele.omnisuiteai.com/api/v1/orders/${custNo}/plan`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+          body: JSON.stringify({
+            planNo: selectedPlan.planNo.toString(),
+            lineSeqNo: "1", // string
+          }),
+        },
+      );
+
+      const data = await res.json();
+      console.log(data, "dadad");
+      if (res.ok) {
+        alert(`Plan upgraded successfully to ${selectedPlan.planName}!`);
+
+        setShowUpgradeModal(false);
+        setSelectedPlan(null);
+
+        if (showUsageModal) checkUsage();
+      } else {
+        setConfirmError(data.message || "Failed to upgrade plan.");
+      }
+    } catch (err) {
+      console.error(err);
+      setConfirmError("Network error while upgrading plan.");
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
   return (
     <>
       {/* Navbar Code Same */}
@@ -265,14 +353,15 @@ export const Navbar: React.FC = () => {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                label={link.label}
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              />
-            ))}
+            {!isChatWindow &&
+              NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                  className="text-gray-700 hover:text-blue-600 font-medium"
+                />
+              ))}
           </nav>
 
           {/* Right Buttons */}
@@ -310,15 +399,15 @@ export const Navbar: React.FC = () => {
             >
               <div className="px-6 py-8 space-y-6">
                 {/* 1. Main Navigation Links - Pehle aayenge */}
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    label={link.label}
-                    className="block text-lg font-medium text-gray-800 hover:text-indigo-600 transition-colors py-2"
-                  />
-                ))}
-
+                {!isChatWindow &&
+                  NAV_LINKS.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      label={link.label}
+                      className="block text-lg font-medium text-gray-800 hover:text-indigo-600 transition-colors py-2"
+                    />
+                  ))}
                 {/* 2. Divider */}
                 <div className="border-t border-gray-200" />
 
@@ -404,7 +493,7 @@ export const Navbar: React.FC = () => {
       </header>
 
       {/* Check Usage Modal */}
-  
+
       <AnimatePresence>
         {showUsageModal && (
           <motion.div
@@ -474,7 +563,7 @@ export const Navbar: React.FC = () => {
               {usageData && (
                 <div className="space-y-6 md:space-y-8">
                   {/* Current Plan Section */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-6 sm:p-7 md:p-8 border-2 border-blue-200">
+                  <div className="from-blue-50 to-indigo-50 rounded-3xl p-6 sm:p-7 md:p-8 border-2 border-blue-200">
                     <h3 className="text-lg sm:text-xl font-bold mb-4 text-indigo-800">
                       Current Plan
                     </h3>
@@ -577,6 +666,16 @@ export const Navbar: React.FC = () => {
                       </p>
                     </div>
                   )}
+                  <Button
+                    variant="gradient"
+                    className="w-full mt-4"
+                    onClick={() => {
+                      setShowUpgradeModal(true);
+                      fetchPlans();
+                    }}
+                  >
+                    Upgrade Plan
+                  </Button>
                 </div>
               )}
             </motion.div>
@@ -682,6 +781,156 @@ export const Navbar: React.FC = () => {
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteCustomer}
       />
+      <AnimatePresence>
+        {showUpgradeModal && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 md:p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowUpgradeModal(false)}
+          >
+            <motion.div
+              className="
+          bg-white 
+          rounded-3xl 
+          shadow-2xl 
+          p-5 sm:p-6 md:p-8 
+          w-full 
+          max-w-lg sm:max-w-xl md:max-w-2xl 
+          max-h-[85vh] 
+          overflow-y-auto
+        "
+              initial={{ scale: 0.9, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 50 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center mb-4 md:mb-6">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
+                  Upgrade Plan
+                </h2>
+                <button onClick={() => setShowUpgradeModal(false)}>
+                  <X size={26} className="text-gray-500" />
+                </button>
+              </div>
+
+              {/* Loading */}
+              {plansLoading && (
+                <div className="text-center py-12">
+                  <Loader2 className="w-12 h-12 animate-spin text-green-600 mx-auto mb-4" />
+                  <p className="text-base md:text-lg">
+                    Loading available plans...
+                  </p>
+                </div>
+              )}
+
+              {/* Error */}
+              {plansError && (
+                <div className="text-center py-10 md:py-14 bg-red-50 rounded-3xl border-2 border-red-200 px-4">
+                  <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                  <p className="text-lg md:text-xl font-bold text-red-600">
+                    {plansError}
+                  </p>
+                </div>
+              )}
+
+              {/* Plans List */}
+              <div className="space-y-4">
+                {plans.map((plan) => {
+                  console.log(plans, "1111");
+                  console.log(plan);
+                  const isCurrentPlan =
+                    plan.planName === usageData?.service.planName;
+                  return (
+                    <div
+                      key={plan._id}
+                      className={`p-4 rounded-xl border flex justify-between items-center ${
+                        isCurrentPlan
+                          ? "bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed"
+                          : "bg-white border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                      }`}
+                    >
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {plan.planName}
+                        </p>
+                        <p className="text-gray-600">Price: ${plan.price}</p>
+                        <p className="text-gray-500">Network: {plan.network}</p>
+                      </div>
+                      {!isCurrentPlan && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => setSelectedPlan(plan)}
+                        >
+                          Select
+                        </Button>
+                      )}
+                      {isCurrentPlan && (
+                        <span className="text-gray-500 font-medium">
+                          Current Plan
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {selectedPlan && (
+          <motion.div
+            className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-sm p-3 md:p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !confirmLoading && setSelectedPlan(null)}
+          >
+            <motion.div
+              className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full"
+              initial={{ scale: 0.9, y: 50, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 50, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-gray-800 mb-4">
+                Confirm Upgrade
+              </h3>
+              <p className="text-gray-700 mb-6">
+                Are you sure you want to upgrade to{" "}
+                <span className="font-semibold">{selectedPlan.planName}</span>?
+              </p>
+
+              {confirmError && (
+                <div className="mb-4 text-red-600 font-medium">
+                  {confirmError}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedPlan(null)}
+                  disabled={confirmLoading}
+                >
+                  No
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => handleUpgradePlan(selectedPlan.planNo)}
+                  disabled={confirmLoading}
+                >
+                  {confirmLoading ? "Upgrading..." : "Yes"}
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

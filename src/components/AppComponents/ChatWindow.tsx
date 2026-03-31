@@ -4,7 +4,7 @@ import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatDob, formatDobToISO, isDeleteIntent } from "@/lib/utils";
 import sessionStorage from "redux-persist/es/storage/session";
-import DatePicker from "react-datepicker";
+// import DatePicker from "react-datepicker";
 
 interface Plan {
   _id: string;
@@ -73,6 +73,21 @@ const ChatWindow = () => {
 
   const [numberDecisionMade, setNumberDecisionMade] = useState(false);
   const [ageError, setAgeError] = useState("");
+  const [flowCompleted, setFlowCompleted] = useState(false);
+  const [typingDots, setTypingDots] = useState("");
+
+  useEffect(() => {
+    if (!loading) {
+      setTypingDots("");
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setTypingDots((prev) => (prev.length < 3 ? prev + "." : ""));
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [loading]);
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -97,7 +112,9 @@ const ChatWindow = () => {
   useEffect(() => {
     const loadPlans = async () => {
       try {
-        const res = await fetch("https://bele.omnisuiteai.com/api/v1/plans");
+        const res = await fetch(
+          "https://backend-bele.omnisuiteai.com/api/v1/plans",
+        );
         const data = await res.json();
         const list: Plan[] = data.data || [];
         setPlans(list);
@@ -122,7 +139,7 @@ const ChatWindow = () => {
   useEffect(() => {
     if (showDetailsForm && states.length === 0) {
       setLoadingStates(true);
-      fetch("https://bele.omnisuiteai.com/states")
+      fetch("https://backend-bele.omnisuiteai.com/states")
         .then((res) => res.json())
         .then((data) => setStates(data))
         .catch((err) => console.error("Failed to fetch states:", err))
@@ -141,6 +158,8 @@ const ChatWindow = () => {
     state: "",
     postcode: "",
     pin: "",
+    custAuthorityNo: "",
+    custAuthorityType: "",
   });
   const [formErrors, setFormErrors] = useState<any>({});
 
@@ -159,6 +178,8 @@ const ChatWindow = () => {
       "state",
       "postcode",
       "pin",
+      "custAuthorityNo",
+      "custAuthorityType",
     ];
 
     for (let field of requiredFields) {
@@ -185,22 +206,76 @@ const ChatWindow = () => {
       ok = false;
     }
 
-    if (formData.dob) {
-      const [day, month, year] = formData.dob.split("/").map(Number);
-      const birthDate = new Date(year, month - 1, day);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
+    if (!formData.custAuthorityNo.trim()) {
+      errors.custAuthorityNo = "Customer Authority Number is required";
+    }
 
-      if (age < 18) {
-        setAgeError("You must be at least 18 years old to sign up.");
+    if (!formData.custAuthorityType) {
+      errors.custAuthorityType = "Please select a Customer Authority Type";
+    }
+
+    // if (formData.dob) {
+    //   const [day, month, year] = formData.dob.split("/").map(Number);
+    //   const birthDate = new Date(year, month - 1, day);
+    //   const today = new Date();
+    //   let age = today.getFullYear() - birthDate.getFullYear();
+    //   const m = today.getMonth() - birthDate.getMonth();
+    //   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    //     age--;
+    //   }
+
+    //   if (age < 18) {
+    //     setAgeError("You must be at least 18 years old to sign up.");
+    //     ok = false;
+    //   } else {
+    //     setAgeError("");
+    //   }
+    // }
+    if (formData.dob) {
+      const match = formData.dob.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!match) {
+        errors.dob = "Please enter date in dd/mm/yyyy format";
         ok = false;
       } else {
-        setAgeError("");
+        const [, day, month, year] = match;
+        const birthDate = new Date(
+          Number(year),
+          Number(month) - 1,
+          Number(day),
+        );
+
+        // Invalid date check (e.g. 31/02/2000, 00/01/2000 etc.)
+        if (
+          isNaN(birthDate.getTime()) ||
+          Number(day) < 1 ||
+          Number(day) > 31 ||
+          Number(month) < 1 ||
+          Number(month) > 12 ||
+          Number(year) < 1900 ||
+          Number(year) > new Date().getFullYear()
+        ) {
+          errors.dob = "Invalid date";
+          ok = false;
+        } else {
+          // Age calculation only when date is valid
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+
+          if (age < 18) {
+            setAgeError("You must be at least 18 years old to sign up.");
+            ok = false;
+          } else {
+            setAgeError("");
+          }
+        }
       }
+    } else {
+      errors.dob = "Date of birth is required";
+      ok = false;
     }
 
     setFormErrors(errors);
@@ -210,38 +285,61 @@ const ChatWindow = () => {
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name as keyof typeof formData;
     const { value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value.trim() }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
+    // if (name === "dob" && value.trim()) {
+    //   const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    //   if (match) {
+    //     const [_, day, month, year] = match.map(Number);
+    //     const birthDate = new Date(year, month - 1, day);
+    //     const today = new Date();
+    //     let age = today.getFullYear() - birthDate.getFullYear();
+    //     const m = today.getMonth() - birthDate.getMonth();
+    //     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    //       age--;
+    //     }
 
-    if (name === "dob" && value.trim()) {
-      const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-      if (match) {
-        const day = parseInt(match[1], 10);
-        const month = parseInt(match[2], 10);
-        const year = parseInt(match[3], 10);
+    //     if (age < 18) {
+    //       setAgeError("You must be at least 18 years old to sign up.");
+    //     } else {
+    //       setAgeError("");
+    //     }
+    //   }
+    // }
+    if (name === "dob") {
+      const value = e.target.value;
+      // Allow only digits and one '/'
+      if (
+        value.length <= 10 &&
+        (/\d/.test(value.slice(-1)) || value.endsWith("/"))
+      ) {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
+      }
 
+      // Real-time age check only when format is complete
+      if (value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)) {
+        const [, day, month, year] = value.split("/").map(Number);
         const birthDate = new Date(year, month - 1, day);
         const today = new Date();
-
-        let age = today.getFullYear() - year;
-        const m = today.getMonth() - (month - 1);
-        if (m < 0 || (m === 0 && today.getDate() < day)) {
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
-
         if (age < 18) {
           setAgeError("You must be at least 18 years old to sign up.");
         } else {
           setAgeError("");
         }
+      } else {
+        setAgeError(""); // Clear error if incomplete
       }
     }
-  };
-
-  const parseDateFromDDMMYYYY = (dateStr: string) => {
-    if (!dateStr) return null;
-    const [day, month, year] = dateStr.split("/").map(Number);
-    return new Date(year, month - 1, day);
   };
 
   const handleFormSubmit = async (e: any) => {
@@ -403,16 +501,11 @@ const ChatWindow = () => {
     }
 
     const matches = botText.match(/04\d{8}/g);
-    if (
-      matches?.length === 5 &&
-      !isPorting &&
-      !numberDecisionMade &&
-      !hasSelectedNumber
-    ) {
+    if (matches?.length === 5 && !isPorting && !hasSelectedNumber) {
       setNumberOptions(matches);
       setShowNumberButtons(true);
       // Override bot message
-      addBotMessage("Please choose a number from the selection below");
+      // addBotMessage("Please choose a number from the selection below");
       return;
     }
     // Only add bot message if it's not empty
@@ -437,26 +530,26 @@ const ChatWindow = () => {
     setShowConfirmNewNumber(true);
   };
 
-  const confirmNewNumber = (yes: boolean) => {
+  const confirmNewNumber = async (yes: boolean) => {
     setShowConfirmNewNumber(false);
-    if (yes) {
-      setIsPorting(false);
-      setHasSelectedNumber(false);
-      setNumberDecisionMade(true);
-      setSelectedOption("new");
-      addBotMessage(
-        "Thanks, now it's time to choose a number from the selection below"
-      );
 
-      if (numberOptions.length > 0) {
-        setShowNumberButtons(true);
-      } else {
-        handleSend("new number");
-      }
-    } else {
+    if (!yes) {
       setShowNumberTypeSelection(true);
+      return;
     }
+
+    setSelectedOption("new");
+    setIsPorting(false);
+    setHasSelectedNumber(false);
+    setNumberDecisionMade(false);
+
+    addBotMessage(
+      "Thanks, now it's time to choose a number from the selection below.",
+    );
+
+    await handleSend("new number");
   };
+
   const handleExistingNumber = () => {
     setShowNumberTypeSelection(false);
     setShowConfirmNewNumber(true);
@@ -477,7 +570,7 @@ const ChatWindow = () => {
   const handleExistingNumberSubmit = async () => {
     if (!existingPhone.match(/^04\d{8}$/)) {
       alert(
-        "Please enter a valid 10-digit Australian mobile number starting with 04"
+        "Please enter a valid 10-digit Australian mobile number starting with 04",
       );
       return;
     }
@@ -485,23 +578,35 @@ const ChatWindow = () => {
       alert("Please enter your ARN (Account Reference Number)");
       return;
     }
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    if (!custNo) {
-      addBotMessage(
-        "We're having trouble fetching your customer ID. Please try again in a moment."
-      );
-      return;
-    }
+
+    setLoading(true);
 
     try {
-      const res = await fetch("https://bele.omnisuiteai.com/api/v1/auth/otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          custNo,
-          destination: existingPhone,
-        }),
-      });
+      localStorage.setItem("portingNumber", existingPhone);
+
+      setIsPorting(true);
+      setHasSelectedNumber(true);
+      setShowNumberButtons(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      if (!custNo) {
+        addBotMessage(
+          "We're having trouble fetching your customer ID. Please try again in a moment.",
+        );
+        return;
+      }
+      const res = await fetch(
+        "https://backend-bele.omnisuiteai.com/api/v1/auth/otp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            custNo,
+            destination: existingPhone,
+          }),
+        },
+      );
 
       const data = await res.json();
 
@@ -510,15 +615,13 @@ const ChatWindow = () => {
       setOtpTransactionId(data.data.getOtp.transactionId);
 
       setShowExistingNumberOptions(false);
-      setShowPlans(false);
-      setShowNumberButtons(false);
-      setShowPayment(false);
-      setShowNumberTypeSelection(false);
       setShowOtpInput(true);
       addBotMessage("OTP has been sent. Please enter it to proceed.");
     } catch (err) {
       console.error(err);
       addBotMessage("Failed to send OTP. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -531,14 +634,17 @@ const ChatWindow = () => {
     try {
       setLoading(true);
 
-      const res = await fetch("https://bele.omnisuiteai.com/api/v1/auth/otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          custNo,
-          destination: existingPhone,
-        }),
-      });
+      const res = await fetch(
+        "https://backend-bele.omnisuiteai.com/api/v1/auth/otp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            custNo,
+            destination: existingPhone,
+          }),
+        },
+      );
 
       const data = await res.json();
 
@@ -579,7 +685,7 @@ const ChatWindow = () => {
       }
 
       addBotMessage(
-        `Great! We'll port your existing number ${existingPhone}. Now please choose a plan.`
+        `Great! We'll port your existing number ${existingPhone}. Now please choose a plan.`,
       );
     } else {
       setShowExistingNumberOptions(true);
@@ -604,6 +710,8 @@ const ChatWindow = () => {
     setSelectedSim(num);
     setHasSelectedNumber(true);
     setShowNumberButtons(false);
+    setShowInitialOptions(false);
+    setIsTypingEnabled(false);
 
     setChat((prev) => [
       ...prev,
@@ -673,7 +781,7 @@ const ChatWindow = () => {
 
     try {
       const res = await fetch(
-        "https://bele.omnisuiteai.com/api/v1/auth/otp/verify",
+        "https://backend-bele.omnisuiteai.com/api/v1/auth/otp/verify",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -681,7 +789,7 @@ const ChatWindow = () => {
             code: otpCode,
             transactionId: otpTransactionId,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -694,14 +802,22 @@ const ChatWindow = () => {
 
       setOtpVerified(true);
       setShowOtpInput(false);
-      alert("OTP verified successfully! You can now proceed to payment.");
+      addBotMessage(
+        "OTP verified successfully! Please choose a plan to continue.",
+      );
+      if (!selectedPlan) {
+        setShowPlans(true);
+      } else {
+        setShowPayment(true);
+      }
+      return;
     } catch (err) {
       console.error(err);
       alert("OTP verification failed. Please try again.");
     }
   };
   const callDeleteIntentAPI = async (text: string) => {
-    const res = await fetch("https://bele.omnisuiteai.com/chat/query", {
+    const res = await fetch("https://backend-bele.omnisuiteai.com/chat/query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: text }),
@@ -720,7 +836,7 @@ const ChatWindow = () => {
 
     if (!storedCustNo) {
       addBotMessage(
-        "You need to sign up or log in first before deleting your account."
+        "You need to sign up or log in first before deleting your account.",
       );
       return;
     }
@@ -770,8 +886,8 @@ const ChatWindow = () => {
       console.log("Activation payload:", body);
 
       const url = isPorting
-        ? "https://bele.omnisuiteai.com/api/v1/orders/activate/port"
-        : "https://bele.omnisuiteai.com/api/v1/orders/activate";
+        ? "https://backend-bele.omnisuiteai.com/api/v1/orders/activate/port"
+        : "https://backend-bele.omnisuiteai.com/api/v1/orders/activate";
 
       const res = await fetch(url, {
         method: "POST",
@@ -805,8 +921,37 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
           }),
         },
       ]);
+      setFlowCompleted(true);
+      setShowInitialOptions(false);
+      setIsTypingEnabled(false);
     } catch (err) {
-      handleSend("Activation failed. Please try again.");
+      console.error("Activation error:", err);
+
+      const failureMessage = `Unfortunately, we couldn't complete your SIM activation.
+
+This can sometimes happen if:
+• Some of the details provided were incorrect
+• There was a temporary system issue
+• The selected number or SIM could not be validated
+
+No worries — you can try again or choose one of the options below, and I’ll help you from there.`;
+
+      setChat((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          type: "bot",
+          text: failureMessage,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+
+      setFlowCompleted(false);
+      setShowInitialOptions(true);
+      setIsTypingEnabled(false);
     }
   };
 
@@ -831,7 +976,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
     } else if (option === "Account, billing or Technical Problem") {
       setIsTypingEnabled(true);
       addBotMessage(
-        "Please describe your account, billing, or technical issue and I'll help you resolve it."
+        "Please describe your account, billing, or technical issue and I'll help you resolve it.",
       );
     } else if (option === "transfer-number") {
       setIsTransferMode(true);
@@ -844,7 +989,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
   };
 
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-[#05263D] overflow-hidden">
+    <div className="relative flex items-center justify-center min-h-screen bg-[#05263D] overflow-hidden mt-18">
       {/* Background layers */}
       <div
         className="absolute inset-0 bg-cover bg-center blur-sm opacity-60"
@@ -857,6 +1002,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
         {/* Header */}
 
         <div className="flex justify-between items-center p-3 sm:p-4 bg-linear-to-r from-[#A9D7F1] via-[#F9F4F8] to-[#F8CFF3] shadow-md">
+          {/* Left: Main Logo */}
           <div className="flex items-center gap-2">
             <img
               src="/images/logo.png"
@@ -864,12 +1010,23 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
               className="hidden sm:block h-8 sm:h-10 w-auto drop-shadow-md"
             />
           </div>
-          <button
-            onClick={() => router.push("/")}
-            className="text-lg sm:text-xl font-bold hover:text-gray-600 transition-colors"
-          >
-            ×
-          </button>
+
+          {/* Right: Just Mobile Logo + Close */}
+          <div className="flex items-center gap-3">
+            <img
+              src="/images/just-mobile-logo.png"
+              alt="Just Mobile"
+              className="h-10 sm:h-12 w-auto drop-shadow-md"
+            />
+
+            <button
+              onClick={() => router.push("/")}
+              className="text-lg sm:text-xl font-bold hover:text-gray-600 transition-colors"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* Chat body */}
@@ -919,17 +1076,21 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
           ))}
 
           {loading && (
-            <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
-              <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden">
+            <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 animate-fade-in">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden shadow-sm">
                 <img
                   src="/images/bot.png"
                   alt="Loading Avatar"
                   className="w-full h-full rounded-full object-cover"
                 />
               </div>
-              <div className="bg-white rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
-                <p className="text-[#0E3B5C] text-xs sm:text-xs md:text-sm leading-relaxed">
-                  Typing...
+
+              <div className="bg-white rounded-2xl px-4 py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
+                <p className="text-[#0E3B5C] text-xs sm:text-sm font-medium">
+                  Flying Kiwi Assistant
+                </p>
+                <p className="text-[#0E3B5C] text-xs sm:text-sm leading-relaxed">
+                  Choose and option below{typingDots}
                 </p>
               </div>
             </div>
@@ -952,7 +1113,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                 <button
                   onClick={() =>
                     handleInitialOptionSelect(
-                      "Account, billing or Technical Problem"
+                      "Account, billing or Technical Problem",
                     )
                   }
                   className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-3 rounded-lg hover:opacity-90 transition-opacity text-sm sm:text-base font-medium"
@@ -973,7 +1134,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
             {showDetailsForm ? (
               <form
                 onSubmit={handleFormSubmit}
-                className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-white/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
+                className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-black/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
               >
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                   <div>
@@ -982,7 +1143,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       value={formData.firstName}
                       onChange={handleFormChange}
                       placeholder="First Name"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.firstName && (
@@ -997,7 +1158,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       value={formData.surname}
                       onChange={handleFormChange}
                       placeholder="Surname"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.surname && (
@@ -1013,7 +1174,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       onChange={handleFormChange}
                       placeholder="Email"
                       type="email"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.email && (
@@ -1028,7 +1189,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       value={formData.phone}
                       onChange={handleFormChange}
                       placeholder="Phone (e.g., 0412345678)"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.phone && (
@@ -1037,7 +1198,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       </p>
                     )}
                   </div>
-                  <DatePicker
+                  {/* <DatePicker
                     selected={
                       formData.dob ? parseDateFromDDMMYYYY(formData.dob) : null
                     }
@@ -1051,25 +1212,22 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         const year = date.getFullYear();
                         const newDob = `${day}/${month}/${year}`;
 
+                        // Update form data
                         setFormData((prev) => ({
                           ...prev,
                           dob: newDob,
                         }));
-
                         const birthDate = new Date(
                           year,
                           date.getMonth(),
                           date.getDate()
                         );
                         const today = new Date();
-
                         let age = today.getFullYear() - birthDate.getFullYear();
-                        const monthDiff =
-                          today.getMonth() - birthDate.getMonth();
+                        const m = today.getMonth() - birthDate.getMonth();
                         if (
-                          monthDiff < 0 ||
-                          (monthDiff === 0 &&
-                            today.getDate() < birthDate.getDate())
+                          m < 0 ||
+                          (m === 0 && today.getDate() < birthDate.getDate())
                         ) {
                           age--;
                         }
@@ -1079,9 +1237,8 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                             "You must be at least 18 years old to sign up."
                           );
                         } else {
-                          setAgeError("");
+                          setAgeError(""); // Clear error if now 18+
                         }
-
                         setFormErrors((prev: any) => ({ ...prev, dob: "" }));
                       } else {
                         setFormData((prev) => ({ ...prev, dob: "" }));
@@ -1096,14 +1253,31 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     <p className="text-red-300 text-xs mt-1">
                       {formErrors.dob}
                     </p>
-                  )}
+                  )} */}
+                  <div>
+                    <input
+                      type="text"
+                      name="dob"
+                      value={formData.dob}
+                      onChange={handleFormChange}
+                      placeholder="dd/mm/yyyy"
+                      maxLength={10}
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.dob && (
+                      <p className="text-red-300 text-xs mt-0.5">
+                        {formErrors.dob}
+                      </p>
+                    )}
+                  </div>
                   <div>
                     <input
                       name="address"
                       value={formData.address}
                       onChange={handleFormChange}
                       placeholder="Address"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.address && (
@@ -1118,7 +1292,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       value={formData.suburb}
                       onChange={handleFormChange}
                       placeholder="Suburb"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.suburb && (
@@ -1142,10 +1316,10 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                             state: "",
                           }));
                         }}
-                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black border border-white/50 text-xs sm:text-sm focus:outline-none"
                         required
                       >
-                        <option value="" className="text-black">
+                        <option value="" className="text-black font-medium">
                           Select State
                         </option>
 
@@ -1153,7 +1327,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                           <option
                             key={index}
                             value={state.code}
-                            className="text-black"
+                            className="text-black font-medium"
                           >
                             {state.name ?? state.code}
                           </option>
@@ -1178,7 +1352,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       value={formData.postcode}
                       onChange={handleFormChange}
                       placeholder="Postcode (4 digits)"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.postcode && (
@@ -1192,14 +1366,82 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       name="pin"
                       value={formData.pin}
                       onChange={handleFormChange}
-                      placeholder="4-digit PIN"
+                      placeholder="Create a 4-digit PIN"
                       maxLength={4}
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
                       required
                     />
                     {formErrors.pin && (
                       <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
                         {formErrors.pin}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <select
+                      name="custAuthorityType"
+                      value={formData.custAuthorityType}
+                      onChange={(e) => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          custAuthorityType: e.target.value,
+                        }));
+                        setFormErrors((prev: any) => ({
+                          ...prev,
+                          custAuthorityType: "",
+                        }));
+                      }}
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black border border-white/50 text-xs sm:text-sm focus:outline-none"
+                      required
+                    >
+                      <option
+                        value=""
+                        disabled
+                        hidden
+                        className="text-gray-400"
+                      >
+                        ID Type
+                      </option>
+                      <option value="DL" className="text-black ">
+                        Driver License
+                      </option>
+                      <option value="PA" className="text-black ">
+                        Passport
+                      </option>
+                      <option value="PI" className="text-black ">
+                        Proof of age Card
+                      </option>
+                    </select>
+
+                    {formErrors.custAuthorityType && (
+                      <p className=" text-xs mt-0.5 sm:mt-1">
+                        {formErrors.custAuthorityType}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      name="custAuthorityNo"
+                      value={formData.custAuthorityNo}
+                      onChange={(e) => {
+                        const value = e.target.value.substring(0, 20);
+                        setFormData((prev) => ({
+                          ...prev,
+                          custAuthorityNo: String(value),
+                        }));
+                        setFormErrors((prev: any) => ({
+                          ...prev,
+                          custAuthorityNo: "",
+                        }));
+                      }}
+                      placeholder="Customer Authority Number"
+                      maxLength={20}
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                      required
+                    />
+                    {formErrors.custAuthorityNo && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                        {formErrors.custAuthorityNo}
                       </p>
                     )}
                   </div>
@@ -1295,7 +1537,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     value={existingPhone}
                     onChange={(e) =>
                       setExistingPhone(
-                        e.target.value.replace(/\D/g, "").substring(0, 10)
+                        e.target.value.replace(/\D/g, "").substring(0, 10),
                       )
                     }
                     placeholder="Enter your 10-digit mobile number (04xxxxxxxx)"
@@ -1314,7 +1556,11 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     <input
                       type="text"
                       value={arn}
-                      onChange={(e) => setArn(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setArn(value);
+                        localStorage.setItem("arn", value);
+                      }}
                       placeholder="Enter ARN (Account Reference Number)"
                       className="w-full p-2 rounded bg-transparent border border-white/50 text-white text-center"
                     />
@@ -1324,12 +1570,13 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                 <button
                   onClick={handleExistingNumberSubmit}
                   disabled={
+                    loading ||
                     !existingPhone.match(/^04\d{8}$/) ||
                     (existingNumberType === "postpaid" && !arn.trim())
                   }
                   className="w-full bg-linear-to-r from-blue-600 to-teal-500 text-white py-2 rounded hover:opacity-90 disabled:opacity-50"
                 >
-                  Continue
+                  {loading ? "Processing..." : "Continue"}
                 </button>
               </div>
             ) : showConfirmExistingNumber ? (
@@ -1439,7 +1686,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   if (success) handleActivateOrder();
                 }}
               />
-            ) : (
+            ) : isTypingEnabled && !flowCompleted ? (
               <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">
                 <input
                   type="text"
@@ -1447,17 +1694,13 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                   placeholder="Message..."
-                  disabled={!isTypingEnabled || showInitialOptions}
-                  className={`flex-1 bg-transparent text-white placeholder-white/70 text-xs sm:text-sm focus:outline-none ${
-                    !isTypingEnabled || showInitialOptions
-                      ? "cursor-not-allowed opacity-50"
-                      : ""
-                  }`}
+                  disabled={loading}
+                  className="flex-1 bg-transparent text-white placeholder-white/70 text-xs sm:text-sm focus:outline-none"
                 />
 
                 <button
                   onClick={sendMessage}
-                  disabled={loading || !isTypingEnabled || showInitialOptions}
+                  disabled={loading}
                   className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-linear-to-r from-blue-600 to-teal-500 text-white hover:opacity-90 disabled:opacity-50"
                 >
                   <svg
@@ -1473,7 +1716,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   </svg>
                 </button>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
