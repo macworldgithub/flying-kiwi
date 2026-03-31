@@ -66,7 +66,8 @@ const ChatWindow = () => {
   const [states, setStates] = useState([]);
   const [loadingStates, setLoadingStates] = useState(false);
 
-  const [showInitialOptions, setShowInitialOptions] = useState(true);
+  // To this:
+  const [showInitialOptions, setShowInitialOptions] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isTypingEnabled, setIsTypingEnabled] = useState(false);
   const [isTransferMode, setIsTransferMode] = useState(false);
@@ -88,27 +89,36 @@ const ChatWindow = () => {
 
     return () => clearInterval(interval);
   }, [loading]);
-
   useEffect(() => {
-    const fromBanner = searchParams.get("fromBanner");
-    if (fromBanner) {
-      setShowInitialOptions(false);
-      setIsTypingEnabled(true);
-      setChat([
-        {
-          id: 1,
-          type: "bot",
-          text: "Let me help you switch to an E-sim. Please fill the form below.",
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        },
-      ]);
-      setShowDetailsForm(true);
-    }
-  }, [searchParams]);
+    const loadPlans = async () => {
+      try {
+        const res = await fetch(
+          "https://backend-bele.omnisuiteai.com/api/v1/plans",
+        );
+        const data = await res.json();
+        const list: Plan[] = data.data || [];
+        setPlans(list);
 
+        const planParam = searchParams.get("plan");
+
+        if (planParam) {
+          const match = list.find((p) => p.planName === planParam);
+          if (match) {
+            setSelectedPlan(match);
+            setShowDetailsForm(true);
+            setShowInitialOptions(false); // ← Don't show 3 options
+          }
+        } else {
+          setShowInitialOptions(true); // ← Show 3 options only when no plan in URL
+        }
+      } catch (e) {
+        console.error("Failed loading plans:", e);
+        setShowInitialOptions(true);
+      }
+    };
+
+    loadPlans();
+  }, [searchParams]);
   useEffect(() => {
     const loadPlans = async () => {
       try {
@@ -1096,7 +1106,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
             </div>
           )}
 
-          {showInitialOptions && (
+          {showInitialOptions && !selectedPlan && (
             <div className="flex flex-col gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 mb-4">
               {/* <p className="text-white text-center font-medium mb-2">
                 How can I help you today?
@@ -1612,7 +1622,6 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   </button>
                 ))}
               </div>
-              
             ) : showPlans && !selectedPlan && plans.length > 0 ? (
               <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
                 {plans.map((plan, index) => (
@@ -1657,7 +1666,6 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   Resend OTP
                 </button>
               </div>
-
             ) : showPayment &&
               selectedPlan &&
               (existingNumberType ? otpVerified : true) ? (
