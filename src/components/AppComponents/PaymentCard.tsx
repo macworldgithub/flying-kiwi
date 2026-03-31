@@ -32,7 +32,7 @@ export const PaymentCard = ({
       if (!existingScript) {
         const script = document.createElement("script");
         script.src =
-          "https://api.quickstream.westpac.com.au/rest/v1/quickstream-api-1.0.min.js";
+          "https://api.quickstream.support.qvalent.com/rest/v1/quickstream-api-1.0.min.js";
         script.id = "quickstream-js";
         script.async = true;
         script.onload = initQuickstream;
@@ -50,12 +50,14 @@ export const PaymentCard = ({
 
       window.QuickstreamAPI.init({
         publishableApiKey:
-          "TIAB_PUB_sawvcp2cgmdfiyehcysqpe6qh6ajk4pbhgasz3t9tetu7t3r9p767ygsmmxm",
+          // "TIAB_PUB_sawvcp2cgmdfiyehcysqpe6qh6ajk4pbhgasz3t9tetu7t3r9p767ygsmmxm",
+          // "TIAB_PUB_6qmasp5p4aknyy4nys55nsndtuirjfe5sc2dcujrzcvnpcx4i8hc2pkjvi4w",
+          "TIAB_PUB_6qmasp5p4aknyy4nys55nsndtuirjfe5sc2dcujrzcvnpcx4i8hc2pkjvi4w",
       });
 
       let trustedFrame: any = null;
       const submitBtn = document.getElementById(
-        "submitBtn"
+        "submitBtn",
       ) as HTMLButtonElement;
       const form = document.getElementById("payment-form") as HTMLFormElement;
 
@@ -87,7 +89,7 @@ export const PaymentCard = ({
           }
           trustedFrame = data.trustedFrame;
           submitBtn.disabled = false;
-        }
+        },
       );
 
       form.onsubmit = async (e) => {
@@ -113,12 +115,12 @@ export const PaymentCard = ({
             if (!token) throw new Error("No token returned");
 
             const methodResponse = await fetch(
-              "https://bele.omnisuiteai.com/api/v1/payments/methods",
+              "https://backend-bele.omnisuiteai.com/api/v1/payments/methods",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ custNo, paymentTokenId: token }),
-              }
+              },
             );
 
             const methodData = await methodResponse.json();
@@ -160,7 +162,7 @@ export const PaymentCard = ({
             // };
 
             // const processResponse = await fetch(
-            //   "https://bele.omnisuiteai.com/api/v1/payments/process",
+            //   "https://backend-bele.omnisuiteai.com/api/v1/payments/process",
             //   {
             //     method: "POST",
             //     headers: { "Content-Type": "application/json" },
@@ -177,12 +179,12 @@ export const PaymentCard = ({
               if (!storedCustNo) throw new Error("Customer number missing");
 
               const updateResponse = await fetch(
-                `https://bele.omnisuiteai.com/api/v1/orders/${storedCustNo}/plan`,
+                `https://backend-bele.omnisuiteai.com/api/v1/orders/${storedCustNo}/plan`,
                 {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ planNo: String(planNo) }),
-                }
+                },
               );
 
               const updateData = await updateResponse.json();

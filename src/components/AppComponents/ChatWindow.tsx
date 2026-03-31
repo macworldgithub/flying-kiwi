@@ -112,7 +112,9 @@ const ChatWindow = () => {
   useEffect(() => {
     const loadPlans = async () => {
       try {
-        const res = await fetch("https://bele.omnisuiteai.com/api/v1/plans");
+        const res = await fetch(
+          "https://backend-bele.omnisuiteai.com/api/v1/plans",
+        );
         const data = await res.json();
         const list: Plan[] = data.data || [];
         setPlans(list);
@@ -137,7 +139,7 @@ const ChatWindow = () => {
   useEffect(() => {
     if (showDetailsForm && states.length === 0) {
       setLoadingStates(true);
-      fetch("https://bele.omnisuiteai.com/states")
+      fetch("https://backend-bele.omnisuiteai.com/states")
         .then((res) => res.json())
         .then((data) => setStates(data))
         .catch((err) => console.error("Failed to fetch states:", err))
@@ -239,7 +241,7 @@ const ChatWindow = () => {
         const birthDate = new Date(
           Number(year),
           Number(month) - 1,
-          Number(day)
+          Number(day),
         );
 
         // Invalid date check (e.g. 31/02/2000, 00/01/2000 etc.)
@@ -542,7 +544,7 @@ const ChatWindow = () => {
     setNumberDecisionMade(false);
 
     addBotMessage(
-      "Thanks, now it's time to choose a number from the selection below."
+      "Thanks, now it's time to choose a number from the selection below.",
     );
 
     await handleSend("new number");
@@ -568,7 +570,7 @@ const ChatWindow = () => {
   const handleExistingNumberSubmit = async () => {
     if (!existingPhone.match(/^04\d{8}$/)) {
       alert(
-        "Please enter a valid 10-digit Australian mobile number starting with 04"
+        "Please enter a valid 10-digit Australian mobile number starting with 04",
       );
       return;
     }
@@ -590,18 +592,21 @@ const ChatWindow = () => {
 
       if (!custNo) {
         addBotMessage(
-          "We're having trouble fetching your customer ID. Please try again in a moment."
+          "We're having trouble fetching your customer ID. Please try again in a moment.",
         );
         return;
       }
-      const res = await fetch("https://bele.omnisuiteai.com/api/v1/auth/otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          custNo,
-          destination: existingPhone,
-        }),
-      });
+      const res = await fetch(
+        "https://backend-bele.omnisuiteai.com/api/v1/auth/otp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            custNo,
+            destination: existingPhone,
+          }),
+        },
+      );
 
       const data = await res.json();
 
@@ -629,14 +634,17 @@ const ChatWindow = () => {
     try {
       setLoading(true);
 
-      const res = await fetch("https://bele.omnisuiteai.com/api/v1/auth/otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          custNo,
-          destination: existingPhone,
-        }),
-      });
+      const res = await fetch(
+        "https://backend-bele.omnisuiteai.com/api/v1/auth/otp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            custNo,
+            destination: existingPhone,
+          }),
+        },
+      );
 
       const data = await res.json();
 
@@ -677,7 +685,7 @@ const ChatWindow = () => {
       }
 
       addBotMessage(
-        `Great! We'll port your existing number ${existingPhone}. Now please choose a plan.`
+        `Great! We'll port your existing number ${existingPhone}. Now please choose a plan.`,
       );
     } else {
       setShowExistingNumberOptions(true);
@@ -773,7 +781,7 @@ const ChatWindow = () => {
 
     try {
       const res = await fetch(
-        "https://bele.omnisuiteai.com/api/v1/auth/otp/verify",
+        "https://backend-bele.omnisuiteai.com/api/v1/auth/otp/verify",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -781,7 +789,7 @@ const ChatWindow = () => {
             code: otpCode,
             transactionId: otpTransactionId,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -795,7 +803,7 @@ const ChatWindow = () => {
       setOtpVerified(true);
       setShowOtpInput(false);
       addBotMessage(
-        "OTP verified successfully! Please choose a plan to continue."
+        "OTP verified successfully! Please choose a plan to continue.",
       );
       if (!selectedPlan) {
         setShowPlans(true);
@@ -809,7 +817,7 @@ const ChatWindow = () => {
     }
   };
   const callDeleteIntentAPI = async (text: string) => {
-    const res = await fetch("https://bele.omnisuiteai.com/chat/query", {
+    const res = await fetch("https://backend-bele.omnisuiteai.com/chat/query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: text }),
@@ -828,7 +836,7 @@ const ChatWindow = () => {
 
     if (!storedCustNo) {
       addBotMessage(
-        "You need to sign up or log in first before deleting your account."
+        "You need to sign up or log in first before deleting your account.",
       );
       return;
     }
@@ -878,8 +886,8 @@ const ChatWindow = () => {
       console.log("Activation payload:", body);
 
       const url = isPorting
-        ? "https://bele.omnisuiteai.com/api/v1/orders/activate/port"
-        : "https://bele.omnisuiteai.com/api/v1/orders/activate";
+        ? "https://backend-bele.omnisuiteai.com/api/v1/orders/activate/port"
+        : "https://backend-bele.omnisuiteai.com/api/v1/orders/activate";
 
       const res = await fetch(url, {
         method: "POST",
