@@ -63,6 +63,7 @@ const ChatWindow = () => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingDeleteIntent, setPendingDeleteIntent] = useState(false);
+  const [showSubmitConfirmModal, setShowSubmitConfirmModal] = useState(false);
 
   const [states, setStates] = useState([]);
   const [loadingStates, setLoadingStates] = useState(false);
@@ -78,7 +79,6 @@ const ChatWindow = () => {
   const [flowCompleted, setFlowCompleted] = useState(false);
   const [typingDots, setTypingDots] = useState("");
   const [showTip, setShowTip] = useState(true);
-  
 
   useEffect(() => {
     if (!loading) {
@@ -359,6 +359,13 @@ const ChatWindow = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    // Show confirmation modal instead of submitting directly
+    setShowSubmitConfirmModal(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setShowSubmitConfirmModal(false);
+
     const isoDob = formatDobToISO(formData.dob);
 
     sessionStorage.setItem("userDOB", isoDob);
@@ -392,6 +399,11 @@ const ChatWindow = () => {
         }),
       },
     ]);
+  };
+
+  const handleCancelSubmit = () => {
+    setShowSubmitConfirmModal(false);
+    // User stays on the form, no changes needed
   };
 
   useEffect(() => {
@@ -1159,30 +1171,29 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   onSubmit={handleFormSubmit}
                   className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-black/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
                 >
-                      <AnimatePresence>
-                        {
-                          <motion.div
-                            initial={{ opacity: 0, y: -20, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                            transition={{ duration: 0.35, ease: "easeOut" }}
-                            className="relative mb-3 sm:mb-4 px-4 py-3 rounded-xl border border-blue-400/30 bg-gradient-to-r from-blue-500/10 to-teal-400/10 backdrop-blur-md text-black text-xs sm:text-sm shadow-md"
-                          >
-                            {/* Content */}
-                            <p className="leading-relaxed pr-5">
-                              <span className="font-semibold text-blue-700">
-                                Before you start:
-                              </span>{" "}
-                              If you're transferring your number, you'll need
-                              your{" "}
-                              <span className="font-semibold underline decoration-blue-500">
-                                existing provider account number
-                              </span>
-                              .
-                            </p>
-                          </motion.div>
-                        }
-                      </AnimatePresence>
+                  <AnimatePresence>
+                    {
+                      <motion.div
+                        initial={{ opacity: 0, y: -20, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                        transition={{ duration: 0.35, ease: "easeOut" }}
+                        className="relative mb-3 sm:mb-4 px-4 py-3 rounded-xl border border-blue-400/30 bg-gradient-to-r from-blue-500/10 to-teal-400/10 backdrop-blur-md text-black text-xs sm:text-sm shadow-md"
+                      >
+                        {/* Content */}
+                        <p className="leading-relaxed pr-5">
+                          <span className="font-semibold text-blue-700">
+                            Before you start:
+                          </span>{" "}
+                          If you're transferring your number, you'll need your{" "}
+                          <span className="font-semibold underline decoration-blue-500">
+                            existing provider account number
+                          </span>
+                          .
+                        </p>
+                      </motion.div>
+                    }
+                  </AnimatePresence>
                   <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                     <div>
                       <input
@@ -1790,6 +1801,34 @@ No worries — you can try again or choose one of the options below, and I’ll 
               <button
                 onClick={handleConfirmDelete}
                 className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showSubmitConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-white rounded-xl p-6 w-[90%] max-w-sm shadow-2xl text-center">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+              Submit Details
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to submit all these details?
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleCancelSubmit}
+                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+              >
+                No
+              </button>
+
+              <button
+                onClick={handleConfirmSubmit}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
               >
                 Yes
               </button>
