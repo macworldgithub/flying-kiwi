@@ -4,6 +4,7 @@ import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatDob, formatDobToISO, isDeleteIntent } from "@/lib/utils";
 import sessionStorage from "redux-persist/es/storage/session";
+import { motion, AnimatePresence } from "framer-motion";
 // import DatePicker from "react-datepicker";
 
 interface Plan {
@@ -76,6 +77,8 @@ const ChatWindow = () => {
   const [ageError, setAgeError] = useState("");
   const [flowCompleted, setFlowCompleted] = useState(false);
   const [typingDots, setTypingDots] = useState("");
+  const [showTip, setShowTip] = useState(true);
+  
 
   useEffect(() => {
     if (!loading) {
@@ -990,6 +993,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
       );
     } else if (option === "transfer-number") {
       setIsTransferMode(true);
+      setShowTip(true);
       await handleSend("signup");
     }
   };
@@ -997,6 +1001,14 @@ No worries — you can try again or choose one of the options below, and I’ll 
   const sendMessage = () => {
     handleSend(message);
   };
+
+  useEffect(() => {
+    if (showDetailsForm && isTransferMode) {
+      setShowTip(true);
+    } else {
+      setShowTip(false);
+    }
+  }, [showDetailsForm, isTransferMode]);
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-[#05263D] overflow-hidden mt-18">
@@ -1142,337 +1154,363 @@ No worries — you can try again or choose one of the options below, and I’ll 
           {/* Input Bar */}
           <div className="mt-auto">
             {showDetailsForm ? (
-              <form
-                onSubmit={handleFormSubmit}
-                className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-black/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
-              >
-                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                  <div>
-                    <input
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleFormChange}
-                      placeholder="First Name"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.firstName && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.firstName}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <input
-                      name="surname"
-                      value={formData.surname}
-                      onChange={handleFormChange}
-                      placeholder="Surname"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.surname && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.surname}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <input
-                      name="email"
-                      value={formData.email}
-                      onChange={handleFormChange}
-                      placeholder="Email"
-                      type="email"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.email && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.email}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <input
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleFormChange}
-                      placeholder="Phone (e.g., 0412345678)"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.phone && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.phone}
-                      </p>
-                    )}
-                  </div>
-                  {/* <DatePicker
-                    selected={
-                      formData.dob ? parseDateFromDDMMYYYY(formData.dob) : null
-                    }
-                    onChange={(date: Date | null) => {
-                      if (date) {
-                        const day = String(date.getDate()).padStart(2, "0");
-                        const month = String(date.getMonth() + 1).padStart(
-                          2,
-                          "0"
-                        );
-                        const year = date.getFullYear();
-                        const newDob = `${day}/${month}/${year}`;
-
-                        // Update form data
-                        setFormData((prev) => ({
-                          ...prev,
-                          dob: newDob,
-                        }));
-                        const birthDate = new Date(
-                          year,
-                          date.getMonth(),
-                          date.getDate()
-                        );
-                        const today = new Date();
-                        let age = today.getFullYear() - birthDate.getFullYear();
-                        const m = today.getMonth() - birthDate.getMonth();
-                        if (
-                          m < 0 ||
-                          (m === 0 && today.getDate() < birthDate.getDate())
-                        ) {
-                          age--;
-                        }
-
-                        if (age < 18) {
-                          setAgeError(
-                            "You must be at least 18 years old to sign up."
-                          );
-                        } else {
-                          setAgeError(""); // Clear error if now 18+
-                        }
-                        setFormErrors((prev: any) => ({ ...prev, dob: "" }));
-                      } else {
-                        setFormData((prev) => ({ ...prev, dob: "" }));
-                        setAgeError("");
-                      }
-                    }}
-                    placeholderText="dd/mm/yyyy"
-                    dateFormat="dd/MM/yyyy"
-                    className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
-                  />
-                  {formErrors.dob && (
-                    <p className="text-red-300 text-xs mt-1">
-                      {formErrors.dob}
-                    </p>
-                  )} */}
-                  <div>
-                    <input
-                      type="text"
-                      name="dob"
-                      value={formData.dob}
-                      onChange={handleFormChange}
-                      placeholder="dd/mm/yyyy"
-                      maxLength={10}
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.dob && (
-                      <p className="text-red-300 text-xs mt-0.5">
-                        {formErrors.dob}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <input
-                      name="address"
-                      value={formData.address}
-                      onChange={handleFormChange}
-                      placeholder="Address"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.address && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.address}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <input
-                      name="suburb"
-                      value={formData.suburb}
-                      onChange={handleFormChange}
-                      placeholder="Suburb"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.suburb && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.suburb}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <div>
-                      <select
-                        name="state"
-                        value={formData.state}
-                        onChange={(e) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            state: e.target.value,
-                          }));
-                          setFormErrors((prev: any) => ({
-                            ...prev,
-                            state: "",
-                          }));
-                        }}
-                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black border border-white/50 text-xs sm:text-sm focus:outline-none"
-                        required
-                      >
-                        <option value="" className="text-black font-medium">
-                          Select State
-                        </option>
-
-                        {states.map((state: any, index) => (
-                          <option
-                            key={index}
-                            value={state.code}
-                            className="text-black font-medium"
+              <>
+                <form
+                  onSubmit={handleFormSubmit}
+                  className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-black/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
+                >
+                      <AnimatePresence>
+                        {
+                          <motion.div
+                            initial={{ opacity: 0, y: -20, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                            transition={{ duration: 0.35, ease: "easeOut" }}
+                            className="relative mb-3 sm:mb-4 px-4 py-3 rounded-xl border border-blue-400/30 bg-gradient-to-r from-blue-500/10 to-teal-400/10 backdrop-blur-md text-black text-xs sm:text-sm shadow-md"
                           >
-                            {state.name ?? state.code}
-                          </option>
-                        ))}
-                      </select>
+                            {/* Content */}
+                            <p className="leading-relaxed pr-5">
+                              <span className="font-semibold text-blue-700">
+                                Before you start:
+                              </span>{" "}
+                              If you're transferring your number, you'll need
+                              your{" "}
+                              <span className="font-semibold underline decoration-blue-500">
+                                existing provider account number
+                              </span>
+                              .
+                            </p>
+                          </motion.div>
+                        }
+                      </AnimatePresence>
+                  <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                    <div>
+                      <input
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleFormChange}
+                        placeholder="First Name"
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.firstName && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.firstName}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        name="surname"
+                        value={formData.surname}
+                        onChange={handleFormChange}
+                        placeholder="Surname"
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.surname && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.surname}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        name="email"
+                        value={formData.email}
+                        onChange={handleFormChange}
+                        placeholder="Email"
+                        type="email"
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.email && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.email}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleFormChange}
+                        placeholder="Phone (e.g., 0412345678)"
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.phone && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.phone}
+                        </p>
+                      )}
+                    </div>
+                    {/* <DatePicker
+      selected={
+        formData.dob ? parseDateFromDDMMYYYY(formData.dob) : null
+      }
+      onChange={(date: Date | null) => {
+        if (date) {
+          const day = String(date.getDate()).padStart(2, "0");
+          const month = String(date.getMonth() + 1).padStart(
+            2,
+            "0"
+          );
+          const year = date.getFullYear();
+          const newDob = `${day}/${month}/${year}`;
 
+          // Update form data
+          setFormData((prev) => ({
+            ...prev,
+            dob: newDob,
+          }));
+          const birthDate = new Date(
+            year,
+            date.getMonth(),
+            date.getDate()
+          );
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+          if (
+            m < 0 ||
+            (m === 0 && today.getDate() < birthDate.getDate())
+          ) {
+            age--;
+          }
+
+          if (age < 18) {
+            setAgeError(
+              "You must be at least 18 years old to sign up."
+            );
+          } else {
+            setAgeError(""); // Clear error if now 18+
+          }
+          setFormErrors((prev: any) => ({ ...prev, dob: "" }));
+        } else {
+          setFormData((prev) => ({ ...prev, dob: "" }));
+          setAgeError("");
+        }
+      }}
+      placeholderText="dd/mm/yyyy"
+      dateFormat="dd/MM/yyyy"
+      className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+    />
+    {formErrors.dob && (
+      <p className="text-red-300 text-xs mt-1">
+        {formErrors.dob}
+      </p>
+    )} */}
+                    <div>
+                      <input
+                        type="text"
+                        name="dob"
+                        value={formData.dob}
+                        onChange={handleFormChange}
+                        placeholder="dd/mm/yyyy"
+                        maxLength={10}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.dob && (
+                        <p className="text-red-300 text-xs mt-0.5">
+                          {formErrors.dob}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        name="address"
+                        value={formData.address}
+                        onChange={handleFormChange}
+                        placeholder="Address"
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.address && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.address}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        name="suburb"
+                        value={formData.suburb}
+                        onChange={handleFormChange}
+                        placeholder="Suburb"
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.suburb && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.suburb}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <div>
+                        <select
+                          name="state"
+                          value={formData.state}
+                          onChange={(e) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              state: e.target.value,
+                            }));
+                            setFormErrors((prev: any) => ({
+                              ...prev,
+                              state: "",
+                            }));
+                          }}
+                          className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black border border-white/50 text-xs sm:text-sm focus:outline-none"
+                          required
+                        >
+                          <option value="" className="text-black font-medium">
+                            Select State
+                          </option>
+
+                          {states.map((state: any, index) => (
+                            <option
+                              key={index}
+                              value={state.code}
+                              className="text-black font-medium"
+                            >
+                              {state.name ?? state.code}
+                            </option>
+                          ))}
+                        </select>
+
+                        {formErrors.state && (
+                          <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                            {formErrors.state}
+                          </p>
+                        )}
+                      </div>
                       {formErrors.state && (
                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
                           {formErrors.state}
                         </p>
                       )}
                     </div>
-                    {formErrors.state && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.state}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <input
-                      name="postcode"
-                      value={formData.postcode}
-                      onChange={handleFormChange}
-                      placeholder="Postcode (4 digits)"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.postcode && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.postcode}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <input
-                      name="pin"
-                      value={formData.pin}
-                      onChange={handleFormChange}
-                      placeholder="Create a 4-digit PIN"
-                      maxLength={4}
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.pin && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.pin}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <select
-                      name="custAuthorityType"
-                      value={formData.custAuthorityType}
-                      onChange={(e) => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          custAuthorityType: e.target.value,
-                        }));
-                        setFormErrors((prev: any) => ({
-                          ...prev,
-                          custAuthorityType: "",
-                        }));
-                      }}
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black border border-white/50 text-xs sm:text-sm focus:outline-none"
-                      required
-                    >
-                      <option
-                        value=""
-                        disabled
-                        hidden
-                        className="text-gray-400"
+                    <div>
+                      <input
+                        name="postcode"
+                        value={formData.postcode}
+                        onChange={handleFormChange}
+                        placeholder="Postcode (4 digits)"
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.postcode && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.postcode}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        name="pin"
+                        value={formData.pin}
+                        onChange={handleFormChange}
+                        placeholder="Create a 4-digit PIN"
+                        maxLength={4}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.pin && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.pin}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <select
+                        name="custAuthorityType"
+                        value={formData.custAuthorityType}
+                        onChange={(e) => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            custAuthorityType: e.target.value,
+                          }));
+                          setFormErrors((prev: any) => ({
+                            ...prev,
+                            custAuthorityType: "",
+                          }));
+                        }}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black border border-white/50 text-xs sm:text-sm focus:outline-none"
+                        required
                       >
-                        ID Type
-                      </option>
-                      <option value="DL" className="text-black ">
-                        Driver License
-                      </option>
-                      <option value="PA" className="text-black ">
-                        Passport
-                      </option>
-                      <option value="PI" className="text-black ">
-                        Proof of age Card
-                      </option>
-                    </select>
+                        <option
+                          value=""
+                          disabled
+                          hidden
+                          className="text-gray-400"
+                        >
+                          ID Type
+                        </option>
+                        <option value="DL" className="text-black ">
+                          Driver License
+                        </option>
+                        <option value="PA" className="text-black ">
+                          Passport
+                        </option>
+                        <option value="PI" className="text-black ">
+                          Proof of age Card
+                        </option>
+                      </select>
 
-                    {formErrors.custAuthorityType && (
-                      <p className=" text-xs mt-0.5 sm:mt-1">
-                        {formErrors.custAuthorityType}
-                      </p>
-                    )}
+                      {formErrors.custAuthorityType && (
+                        <p className=" text-xs mt-0.5 sm:mt-1">
+                          {formErrors.custAuthorityType}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        name="custAuthorityNo"
+                        value={formData.custAuthorityNo}
+                        onChange={(e) => {
+                          const value = e.target.value.substring(0, 20);
+                          setFormData((prev) => ({
+                            ...prev,
+                            custAuthorityNo: String(value),
+                          }));
+                          setFormErrors((prev: any) => ({
+                            ...prev,
+                            custAuthorityNo: "",
+                          }));
+                        }}
+                        placeholder="Customer Authority Number"
+                        maxLength={20}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.custAuthorityNo && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.custAuthorityNo}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <input
-                      name="custAuthorityNo"
-                      value={formData.custAuthorityNo}
-                      onChange={(e) => {
-                        const value = e.target.value.substring(0, 20);
-                        setFormData((prev) => ({
-                          ...prev,
-                          custAuthorityNo: String(value),
-                        }));
-                        setFormErrors((prev: any) => ({
-                          ...prev,
-                          custAuthorityNo: "",
-                        }));
-                      }}
-                      placeholder="Customer Authority Number"
-                      maxLength={20}
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-black font-medium border border-white/50 text-xs sm:text-sm"
-                      required
-                    />
-                    {formErrors.custAuthorityNo && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                        {formErrors.custAuthorityNo}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                {ageError && (
-                  <p className="text-red-400 font-semibold text-sm mt-2 col-span-2 text-center">
-                    {ageError}
-                  </p>
-                )}
-                <button
-                  type="submit"
-                  disabled={loading || ageError !== ""}
-                  className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
-                    ageError
-                      ? "bg-gray-500 cursor-not-allowed"
-                      : "bg-linear-to-r from-blue-600 to-teal-500 hover:opacity-90"
-                  }`}
-                >
-                  {loading ? "Submitting..." : "Submit Details"}
-                </button>
-              </form>
+                  {ageError && (
+                    <p className="text-red-400 font-semibold text-sm mt-2 col-span-2 text-center">
+                      {ageError}
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={loading || ageError !== ""}
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
+                      ageError
+                        ? "bg-gray-500 cursor-not-allowed"
+                        : "bg-linear-to-r from-blue-600 to-teal-500 hover:opacity-90"
+                    }`}
+                  >
+                    {loading ? "Submitting..." : "Submit Details"}
+                  </button>
+                </form>
+              </>
             ) : showNumberTypeSelection && !isTransferMode ? (
               <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
                 <p className="text-white mb-3">

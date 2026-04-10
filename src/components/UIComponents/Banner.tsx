@@ -10,6 +10,11 @@ interface StatItem {
   label: string;
 }
 
+interface BottomLabel {
+  title: string;
+  description: string;
+}
+
 interface BannerProps {
   title?: string | React.ReactNode;
   paragraph?: string | React.ReactNode;
@@ -23,7 +28,7 @@ interface BannerProps {
   stats?: StatItem[];
   showFloatingCircles?: boolean;
   children?: React.ReactNode;
-
+  bottomLabel?: BottomLabel;
   width?: string;
   height?: string;
 }
@@ -43,6 +48,7 @@ export const Banner: React.FC<BannerProps> = ({
   children,
   width,
   height,
+  bottomLabel,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -62,7 +68,7 @@ export const Banner: React.FC<BannerProps> = ({
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className={cn(
           "relative flex flex-col justify-center overflow-hidden shadow-lg",
-          alignmentClasses[align]
+          alignmentClasses[align],
         )}
         style={{
           width: width || "100%",
@@ -179,7 +185,7 @@ export const Banner: React.FC<BannerProps> = ({
         <div
           className={cn(
             "relative z-10 flex flex-col gap-4 p-10 sm:p-14 md:p-20 lg:p-28 xl:p-32 text-white max-w-[1400px] w-full",
-            alignmentClasses[align]
+            alignmentClasses[align],
           )}
         >
           {onClose && (
@@ -199,7 +205,7 @@ export const Banner: React.FC<BannerProps> = ({
               className={cn(
                 "font-extrabold leading-tight drop-shadow-lg",
                 align === "center" && "mx-auto",
-                "text-[clamp(1.25rem,3vw,3.5rem)] max-w-[95%] sm:max-w-[80%] md:max-w-[70%]"
+                "text-[clamp(1.25rem,3vw,3.5rem)] max-w-[95%] sm:max-w-[80%] md:max-w-[70%]",
               )}
             >
               {title}
@@ -213,7 +219,7 @@ export const Banner: React.FC<BannerProps> = ({
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
               className={cn(
                 "text-white/90 font-medium drop-shadow-md max-w-[95%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%]",
-                "text-[clamp(0.8rem,1.5vw,1.1rem)] leading-relaxed whitespace-pre-line"
+                "text-[clamp(0.8rem,1.5vw,1.1rem)] leading-relaxed whitespace-pre-line",
               )}
             >
               {paragraph}
@@ -239,7 +245,7 @@ export const Banner: React.FC<BannerProps> = ({
               className={cn(
                 "mt-4 sm:mt-6",
                 align === "center" && "mx-auto",
-                align === "right" && "ml-auto"
+                align === "right" && "ml-auto",
               )}
             >
               <Button variant="gradient" size="lg" onClick={onButtonClick}>
@@ -258,8 +264,8 @@ export const Banner: React.FC<BannerProps> = ({
                 align === "right"
                   ? "justify-end text-right sm:items-end"
                   : align === "center"
-                  ? "justify-center text-center sm:items-center"
-                  : "justify-start text-left sm:items-start"
+                    ? "justify-center text-center sm:items-center"
+                    : "justify-start text-left sm:items-start",
               )}
             >
               {stats.map((stat, index) => (
@@ -280,8 +286,36 @@ export const Banner: React.FC<BannerProps> = ({
               ))}
             </motion.div>
           )}
-          {children}
         </div>
+        {bottomLabel && (
+          <div className="absolute bottom-0 left-0 w-full z-20 overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
+
+            <motion.div
+              className="flex w-max whitespace-nowrap bg-white/95 backdrop-blur-md border-t border-gray-200 py-3"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{
+                repeat: Infinity,
+                duration: 30, 
+                ease: "linear",
+              }}
+            >
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="flex items-center gap-8 px-6">
+                  <p className="flex items-center gap-2 text-sm sm:text-base md:text-lg font-semibold text-gray-900">
+                    {bottomLabel.title}
+                  </p>
+
+                  <p className="text-sm sm:text-base text-gray-700">
+                    {bottomLabel.description}
+                  </p>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        )}
+
+        {children}
       </motion.div>
     </AnimatePresence>
   );

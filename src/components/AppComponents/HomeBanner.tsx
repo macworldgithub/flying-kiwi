@@ -12,9 +12,7 @@ export default function HomeBanner() {
   const handleSwitchToEsim = () => {
     router.push("/chat-window?fromBanner=true");
   };
-  const handleMoreAboutUs = () => {
-    router.push("/About");
-  };
+  
 
   return (
     <div className="w-full">
@@ -31,35 +29,14 @@ export default function HomeBanner() {
         overlayOpacity={0.45}
         align="left"
         onButtonClick={handleSwitchToEsim}
+        bottomLabel={{
+          title: "Every time you pay your mobile bill, you’re giving back.",
+          description:
+            "JUST mobile has partnered with Flying Kiwi so that 5% of your monthly spend goes directly towards supporting meaningful community initiatives, at no extra cost to you. Stay connected, and make a difference.",
+        }}
       />
 
-      <div className="relative bg-white overflow-hidden -mt-px">
-        <div className="relative z-10 w-full flex flex-col lg:flex-row items-center justify-between py-16 px-6 sm:px-10 md:px-16 lg:px-20 gap-10">
-          <div className="w-full lg:w-1/2 text-left">
-            <Heading title="Who We Are?" level={3} align="left" />
-            <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed mb-6 max-w-lg">
-              We are a nonprofit organization committed to empowering children
-              through access to quality education, learning tools, and
-              mentorship.
-            </p>
-
-            <Button variant="gradient" size="md" onClick={handleMoreAboutUs}>
-              More About Us
-            </Button>
-          </div>
-
-          <div className="relative w-full lg:w-1/2 flex justify-center">
-            <Image
-              src="/images/hand.png"
-              alt="Who We Are"
-              width={510}
-              height={634}
-              className="object-cover w-full max-w-[550px]"
-            />
-            <div className="absolute bottom-0 left-0 w-full h-20 sm:h-28 bg-linear-to-b from-transparent to-white pointer-events-none" />
-          </div>
-        </div>
-      </div>
+      
     </div>
   );
 }

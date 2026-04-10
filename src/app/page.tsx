@@ -12,9 +12,9 @@ export default function Home() {
   return (
     <>
       <HomeBanner />
+      <SupportPlans />
       <OurPrograms />
       {/* <ChangePlan /> */}
-      <SupportPlans />
       <HomeBanner2 />
       <HomeBanner3 />
       <HomeBanner4 />
