@@ -194,6 +194,8 @@ export const FlyingFitness = () => {
                             <p className="text-gray-600 mb-8 leading-relaxed">
                                 Once a year we celebrate our achievements together with support workers, parents, and friends!
                             </p>
+                            <VideoCard src="https://www.youtube.com/embed/CNpQ4WS2nhk" title="Flying Kiwi Cup" />
+
                         </motion.div>
                     </div>
                 </div>
