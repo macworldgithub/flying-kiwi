@@ -33,7 +33,7 @@ const NAV_LINKS = [
   { label: "The strong Hearts Program", href: "/StrongHeartsProgram" },
   { label: "Support", href: "/support" },
   { label: "About", href: "/About" },
-  { label: "Contact", href: "/contact" },
+  { label: "Contact", href: "/Contact" },
 ];
 
 export const Navbar: React.FC = () => {
@@ -738,8 +738,8 @@ export const Navbar: React.FC = () => {
                 {status !== "idle" && (
                   <div
                     className={`flex items-center gap-3 p-4 rounded-lg border ${status === "success"
-                        ? "bg-green-50 border-green-300 text-green-800"
-                        : "bg-red-50 border-red-300 text-red-800"
+                      ? "bg-green-50 border-green-300 text-green-800"
+                      : "bg-red-50 border-red-300 text-red-800"
                       }`}
                   >
                     {status === "success" ? (
@@ -848,8 +848,8 @@ export const Navbar: React.FC = () => {
                     <div
                       key={plan._id}
                       className={`p-4 rounded-xl border flex justify-between items-center ${isCurrentPlan
-                          ? "bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed"
-                          : "bg-white border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                        ? "bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed"
+                        : "bg-white border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
                         }`}
                     >
                       <div>
