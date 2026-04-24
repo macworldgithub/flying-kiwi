@@ -355,20 +355,20 @@ export const Navbar: React.FC = () => {
             />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
+          <nav className="hidden xl:flex items-center gap-4 flex-1 justify-center">
             {!isChatWindow &&
               NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   label={link.label}
-                  className="text-gray-700 hover:text-blue-600 font-medium"
+                  className="text-gray-700 hover:text-blue-600 font-medium text-sm whitespace-nowrap"
                 />
               ))}
           </nav>
 
           {/* Right Buttons */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden xl:flex items-center gap-4">
             {!isLoggedIn ? (
               <Button variant="gradient" onClick={handleLogin}>
                 Login
@@ -384,7 +384,7 @@ export const Navbar: React.FC = () => {
             )}
           </div>
 
-          <button onClick={() => setIsOpen(!isOpen)} className="md:hidden z-50">
+          <button onClick={() => setIsOpen(!isOpen)} className="xl:hidden z-50">
             {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
@@ -397,7 +397,7 @@ export const Navbar: React.FC = () => {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="md:hidden bg-white border-t border-gray-200 shadow-2xl"
+              className="xl:hidden bg-white border-t border-gray-200 shadow-2xl"
               onClick={() => setIsOpen(false)}
             >
               <div className="px-6 py-8 space-y-6">
