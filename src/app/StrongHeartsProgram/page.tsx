@@ -343,7 +343,7 @@ const StrongHeartsProgram = () => {
       {/* Testimonials Section */}
       <div className="max-w-6xl mx-auto px-4 py-12 pb-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
             Testimonials for Flying Kiwi
           </h2>
         </div>
