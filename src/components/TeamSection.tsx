@@ -27,7 +27,7 @@ const TeamCard: React.FC<{ member: TeamMember }> = ({ member }) => {
       {/* Content Container */}
       <div className="p-8 flex flex-col flex-grow bg-white">
         <div className="mb-5">
-          <motion.div 
+          <motion.div
             initial={{ width: 0 }}
             whileInView={{ width: "2rem" }}
             className="h-1 bg-blue-600 mb-4 rounded-full"
@@ -41,17 +41,27 @@ const TeamCard: React.FC<{ member: TeamMember }> = ({ member }) => {
             </span>
           </div>
         </div>
-        
+
         <p className="text-gray-600 leading-relaxed text-sm lg:text-base line-clamp-4 group-hover:line-clamp-none transition-all duration-500">
           {member.description}
         </p>
-        
+
         {/* Decorative element */}
         <div className="mt-auto pt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
           <div className="flex items-center text-blue-600 font-semibold text-sm">
             Learn more
-            <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="9 5l7 7-7 7" />
+            <svg
+              className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="9 5l7 7-7 7"
+              />
             </svg>
           </div>
         </div>
@@ -83,7 +93,7 @@ export const TeamSection: React.FC = () => {
               The People
             </span>
           </motion.div>
-          
+
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -96,7 +106,7 @@ export const TeamSection: React.FC = () => {
               Flying Kiwi Fitness
             </span>
           </motion.h2>
-          
+
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -104,7 +114,8 @@ export const TeamSection: React.FC = () => {
             transition={{ delay: 0.2 }}
             className="mt-8 text-xl text-gray-600 leading-relaxed font-medium"
           >
-            Our team is made up of those with big hearts. Each member brings unique expertise and a shared passion for making a difference.
+            Our team is made up of those with big hearts. Each member brings
+            unique expertise and a shared passion for making a difference.
           </motion.p>
         </div>
 
@@ -116,10 +127,10 @@ export const TeamSection: React.FC = () => {
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ 
+              transition={{
                 delay: index * 0.1,
                 duration: 0.6,
-                ease: [0.21, 0.47, 0.32, 0.98]
+                ease: [0.21, 0.47, 0.32, 0.98],
               }}
             >
               <TeamCard member={member} />
@@ -128,7 +139,7 @@ export const TeamSection: React.FC = () => {
         </div>
 
         {/* Footer CTA (Optional) */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -137,7 +148,12 @@ export const TeamSection: React.FC = () => {
         >
           <div className="inline-flex items-center gap-2 text-gray-500 font-medium">
             <span>Interested in joining us?</span>
-            <a href="/contact" className="text-blue-600 hover:underline font-bold transition-all">Get in touch</a>
+            <a
+              href="/contact"
+              className="text-blue-600 hover:underline font-bold transition-all"
+            >
+              Get in touch
+            </a>
           </div>
         </motion.div>
       </div>
