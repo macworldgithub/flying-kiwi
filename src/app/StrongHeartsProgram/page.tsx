@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+
 const StrongHeartsProgram = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -40,10 +41,11 @@ const StrongHeartsProgram = () => {
           </p>
         </div>
       </div>
-      {/* Images 1-5 */}
+
+      {/* Images 1-5 - Flexbox with centered last row */}
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
+        <div className="flex flex-wrap justify-center gap-4">
+          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5 w-full md:w-[calc(50%-0.5rem)]">
             <Image
               src="/images/strong/strong1.jpg"
               alt="Strong Hearts Program 1"
@@ -51,7 +53,7 @@ const StrongHeartsProgram = () => {
               className="object-cover"
             />
           </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
+          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5 w-full md:w-[calc(50%-0.5rem)]">
             <Image
               src="/images/strong/strong2.jpg"
               alt="Strong Hearts Program 2"
@@ -59,7 +61,7 @@ const StrongHeartsProgram = () => {
               className="object-cover"
             />
           </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
+          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5 w-full md:w-[calc(50%-0.5rem)]">
             <Image
               src="/images/strong/strong3.jpg"
               alt="Strong Hearts Program 3"
@@ -67,7 +69,7 @@ const StrongHeartsProgram = () => {
               className="object-cover"
             />
           </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
+          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5 w-full md:w-[calc(50%-0.5rem)]">
             <Image
               src="/images/strong/strong4.jpg"
               alt="Strong Hearts Program 4"
@@ -75,7 +77,7 @@ const StrongHeartsProgram = () => {
               className="object-cover"
             />
           </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
+          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5 w-full md:w-[calc(50%-0.5rem)]">
             <Image
               src="/images/strong/strong5.jpg"
               alt="Strong Hearts Program 5"
@@ -85,6 +87,7 @@ const StrongHeartsProgram = () => {
           </div>
         </div>
       </div>
+
       {/* Program Details */}
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 text-gray-800 shadow-lg">
@@ -126,6 +129,7 @@ const StrongHeartsProgram = () => {
           </div>
         </div>
       </div>
+
       {/* Billing Notice */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-6 text-center shadow-lg border border-blue-500/30">
@@ -136,6 +140,7 @@ const StrongHeartsProgram = () => {
           </h3>
         </div>
       </div>
+
       {/* Video Section */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="relative h-96 rounded-xl overflow-hidden shadow-xl">
@@ -149,6 +154,7 @@ const StrongHeartsProgram = () => {
           />
         </div>
       </div>
+
       {/* Trial Form Section */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center text-gray-800">
@@ -165,6 +171,7 @@ const StrongHeartsProgram = () => {
           </Link>
         </div>
       </div>
+
       {/* Contact Form Section */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center text-gray-800">
@@ -180,6 +187,7 @@ const StrongHeartsProgram = () => {
           </Link>
         </div>
       </div>
+
       {/* What to Expect Section */}
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 text-gray-800 shadow-lg">
@@ -210,6 +218,7 @@ const StrongHeartsProgram = () => {
           </div>
         </div>
       </div>
+
       {/* Achievement Section */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center text-gray-800">
@@ -220,10 +229,11 @@ const StrongHeartsProgram = () => {
           </p>
         </div>
       </div>
-      {/* Images 6-10 */}
+
+      {/* Images 6-10 - Flexbox with centered last row */}
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
+        <div className="flex flex-wrap justify-center gap-4">
+          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5 w-full md:w-[calc(50%-0.5rem)]">
             <Image
               src="/images/strong/strong6.jpg"
               alt="Strong Hearts Program 6"
@@ -231,7 +241,7 @@ const StrongHeartsProgram = () => {
               className="object-cover"
             />
           </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
+          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5 w-full md:w-[calc(50%-0.5rem)]">
             <Image
               src="/images/strong/strong7.jpg"
               alt="Strong Hearts Program 7"
@@ -239,7 +249,7 @@ const StrongHeartsProgram = () => {
               className="object-cover"
             />
           </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
+          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5 w-full md:w-[calc(50%-0.5rem)]">
             <Image
               src="/images/strong/strong8.jpg"
               alt="Strong Hearts Program 8"
@@ -247,7 +257,7 @@ const StrongHeartsProgram = () => {
               className="object-cover"
             />
           </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
+          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5 w-full md:w-[calc(50%-0.5rem)]">
             <Image
               src="/images/strong/strong9.jpg"
               alt="Strong Hearts Program 9"
@@ -255,7 +265,7 @@ const StrongHeartsProgram = () => {
               className="object-cover"
             />
           </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
+          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5 w-full md:w-[calc(50%-0.5rem)]">
             <Image
               src="/images/strong/strong10.jpg"
               alt="Strong Hearts Program 10"
@@ -265,6 +275,7 @@ const StrongHeartsProgram = () => {
           </div>
         </div>
       </div>
+
       {/* Support Requirements Section */}
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 text-gray-800 shadow-lg">
@@ -301,6 +312,7 @@ const StrongHeartsProgram = () => {
           </ul>
         </div>
       </div>
+
       {/* Additional Trial and Contact Forms */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center text-gray-800">
@@ -327,6 +339,7 @@ const StrongHeartsProgram = () => {
           </Link>
         </div>
       </div>
+
       {/* Testimonials Section */}
       <div className="max-w-6xl mx-auto px-4 py-12 pb-20">
         <div className="text-center mb-12">
@@ -418,4 +431,5 @@ const StrongHeartsProgram = () => {
     </div>
   );
 };
+
 export default StrongHeartsProgram;
