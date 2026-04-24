@@ -50,8 +50,18 @@ const TeamCard: React.FC<{ member: TeamMember }> = ({ member }) => {
         <div className="mt-auto pt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
           <div className="flex items-center text-[#13AFF0] font-semibold text-sm">
             Learn more
-            <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="9 5l7 7-7 7" />
+            <svg
+              className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="9 5l7 7-7 7"
+              />
             </svg>
           </div>
         </div>
@@ -93,7 +103,6 @@ export const TeamSection: React.FC = () => {
           >
             Meet the Heart of <br />
             Flying Kiwi Fitness!
-
           </motion.h2>
 
           <motion.p
@@ -103,7 +112,8 @@ export const TeamSection: React.FC = () => {
             transition={{ delay: 0.2 }}
             className="mt-8 text-xl text-gray-600 leading-relaxed font-medium"
           >
-            Our team is made up of those with big hearts. Each member brings unique expertise and a shared passion for making a difference.
+            Our team is made up of those with big hearts. Each member brings
+            unique expertise and a shared passion for making a difference.
           </motion.p>
         </div>
 
@@ -118,7 +128,7 @@ export const TeamSection: React.FC = () => {
               transition={{
                 delay: index * 0.1,
                 duration: 0.6,
-                ease: [0.21, 0.47, 0.32, 0.98]
+                ease: [0.21, 0.47, 0.32, 0.98],
               }}
             >
               <TeamCard member={member} />
@@ -135,9 +145,14 @@ export const TeamSection: React.FC = () => {
               viewport={{ once: true }}
               className="text-3xl md:text-4xl font-bold text-gray-900"
             >
-              Flying Kiwi <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#13AFF0] to-[#EB0FB6]">in Action</span>
+              Flying Kiwi{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#13AFF0] to-[#EB0FB6]">
+                in Action
+              </span>
             </motion.h3>
-            <p className="text-gray-500 mt-4 text-lg font-medium">Moments from our programs, events, and daily training.</p>
+            <p className="text-gray-500 mt-4 text-lg font-medium">
+              Moments from our programs, events, and daily training.
+            </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
@@ -173,7 +188,12 @@ export const TeamSection: React.FC = () => {
         >
           <div className="inline-flex items-center gap-2 text-gray-500 font-medium">
             <span>Interested in joining us?</span>
-            <a href="/contact" className="text-[#EB0FB6] hover:text-[#13AFF0] font-bold transition-all">Get in touch</a>
+            <a
+              href="/contact"
+              className="text-[#EB0FB6] hover:text-[#13AFF0] font-bold transition-all"
+            >
+              Get in touch
+            </a>
           </div>
         </motion.div>
       </div>
