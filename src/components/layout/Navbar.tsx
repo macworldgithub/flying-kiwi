@@ -33,7 +33,7 @@ const NAV_LINKS = [
   { label: "The strong Hearts Program", href: "/StrongHeartsProgram" },
   { label: "Support", href: "/support" },
   { label: "About", href: "/About" },
-  { label: "Contact", href: "/Contact" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export const Navbar: React.FC = () => {
@@ -224,9 +224,8 @@ export const Navbar: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
             accept: "*/*",
-            Authorization: `Bearer ${
-              access_token || localStorage.getItem("access_token")
-            }`,
+            Authorization: `Bearer ${access_token || localStorage.getItem("access_token")
+              }`,
           },
           body: JSON.stringify({ oldPin, newPin }),
         },
@@ -738,11 +737,10 @@ export const Navbar: React.FC = () => {
 
                 {status !== "idle" && (
                   <div
-                    className={`flex items-center gap-3 p-4 rounded-lg border ${
-                      status === "success"
+                    className={`flex items-center gap-3 p-4 rounded-lg border ${status === "success"
                         ? "bg-green-50 border-green-300 text-green-800"
                         : "bg-red-50 border-red-300 text-red-800"
-                    }`}
+                      }`}
                   >
                     {status === "success" ? (
                       <CheckCircle size={22} />
@@ -849,11 +847,10 @@ export const Navbar: React.FC = () => {
                   return (
                     <div
                       key={plan._id}
-                      className={`p-4 rounded-xl border flex justify-between items-center ${
-                        isCurrentPlan
+                      className={`p-4 rounded-xl border flex justify-between items-center ${isCurrentPlan
                           ? "bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed"
                           : "bg-white border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
-                      }`}
+                        }`}
                     >
                       <div>
                         <p className="font-semibold text-gray-800">

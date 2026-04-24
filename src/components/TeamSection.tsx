@@ -92,6 +92,7 @@ export const TeamSection: React.FC = () => {
             className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter leading-[1.1]"
           >
             Meet the Heart of <br />
+            Flying Kiwi Fitness!
 
           </motion.h2>
 
