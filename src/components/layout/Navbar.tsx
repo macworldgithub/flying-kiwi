@@ -28,12 +28,12 @@ import { usePathname } from "next/navigation";
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Program", href: "/Program" },
-  { label: "FlyingKiwiFitness", href: "/FlyingKiwiFitness" },
+  { label: "FlyingKiwiFitness", href: "/fitness" },
   { label: "Meet Our Team", href: "/MeetOurTeam" },
   { label: "The strong Hearts Program", href: "/StrongHeartsProgram" },
   { label: "Support", href: "/support" },
   { label: "About", href: "/About" },
-  { label: "Contact", href: "/Contact" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export const Navbar: React.FC = () => {
@@ -224,9 +224,8 @@ export const Navbar: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
             accept: "*/*",
-            Authorization: `Bearer ${
-              access_token || localStorage.getItem("access_token")
-            }`,
+            Authorization: `Bearer ${access_token || localStorage.getItem("access_token")
+              }`,
           },
           body: JSON.stringify({ oldPin, newPin }),
         },
@@ -355,20 +354,20 @@ export const Navbar: React.FC = () => {
             />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
+          <nav className="hidden xl:flex items-center gap-4 flex-1 justify-center">
             {!isChatWindow &&
               NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   label={link.label}
-                  className="text-gray-700 hover:text-blue-600 font-medium"
+                  className="text-gray-700 hover:text-blue-600 font-medium text-sm whitespace-nowrap"
                 />
               ))}
           </nav>
 
           {/* Right Buttons */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden xl:flex items-center gap-4">
             {!isLoggedIn ? (
               <Button variant="gradient" onClick={handleLogin}>
                 Login
@@ -384,7 +383,7 @@ export const Navbar: React.FC = () => {
             )}
           </div>
 
-          <button onClick={() => setIsOpen(!isOpen)} className="md:hidden z-50">
+          <button onClick={() => setIsOpen(!isOpen)} className="xl:hidden z-50">
             {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
@@ -397,7 +396,7 @@ export const Navbar: React.FC = () => {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="md:hidden bg-white border-t border-gray-200 shadow-2xl"
+              className="xl:hidden bg-white border-t border-gray-200 shadow-2xl"
               onClick={() => setIsOpen(false)}
             >
               <div className="px-6 py-8 space-y-6">
@@ -738,11 +737,10 @@ export const Navbar: React.FC = () => {
 
                 {status !== "idle" && (
                   <div
-                    className={`flex items-center gap-3 p-4 rounded-lg border ${
-                      status === "success"
+                    className={`flex items-center gap-3 p-4 rounded-lg border ${status === "success"
                         ? "bg-green-50 border-green-300 text-green-800"
                         : "bg-red-50 border-red-300 text-red-800"
-                    }`}
+                      }`}
                   >
                     {status === "success" ? (
                       <CheckCircle size={22} />
@@ -849,11 +847,10 @@ export const Navbar: React.FC = () => {
                   return (
                     <div
                       key={plan._id}
-                      className={`p-4 rounded-xl border flex justify-between items-center ${
-                        isCurrentPlan
+                      className={`p-4 rounded-xl border flex justify-between items-center ${isCurrentPlan
                           ? "bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed"
                           : "bg-white border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
-                      }`}
+                        }`}
                     >
                       <div>
                         <p className="font-semibold text-gray-800">

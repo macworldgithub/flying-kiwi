@@ -7,6 +7,19 @@ export interface TeamMember {
   originalImageUrl: string;
 }
 
+export const actionShots = [
+  "/images/team/action1.jpg",
+  "/images/team/action2.jpg",
+  "/images/team/action3.jpg",
+  "/images/team/action4.jpg",
+  "/images/team/action5.jpg",
+  "/images/team/action6.jpg",
+  "/images/team/action7.jpg",
+  "/images/team/action8.jpg",
+  "/images/team/action9.jpg",
+  "/images/team/action10.jpg",
+];
+
 export const teamData: TeamMember[] = [
   {
     id: 1,
