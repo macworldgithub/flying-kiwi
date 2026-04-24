@@ -28,7 +28,7 @@ import { usePathname } from "next/navigation";
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Program", href: "/Program" },
-  { label: "FlyingKiwiFitness", href: "/FlyingKiwiFitness" },
+  { label: "FlyingKiwiFitness", href: "/fitness" },
   { label: "Meet Our Team", href: "/MeetOurTeam" },
   { label: "The strong Hearts Program", href: "/StrongHeartsProgram" },
   { label: "Support", href: "/support" },
