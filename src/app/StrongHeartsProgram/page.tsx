@@ -1,8 +1,28 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 const StrongHeartsProgram = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const testimonials = [
+    { id: 11, image: "/images/strong/strong11.png" },
+    { id: 12, image: "/images/strong/strong12.jpg" },
+    { id: 13, image: "/images/strong/strong13.jpg" },
+    { id: 14, image: "/images/strong/strong14.png" },
+    { id: 15, image: "/images/strong/strong15.png" },
+  ];
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide(
+      (prev) => (prev - 1 + testimonials.length) % testimonials.length,
+    );
+  };
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#FDEBF5" }}>
       {/* Hero Section */}
@@ -308,55 +328,90 @@ const StrongHeartsProgram = () => {
         </div>
       </div>
       {/* Testimonials Section */}
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="text-center">
+      <div className="max-w-6xl mx-auto px-4 py-12 pb-20">
+        <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
             Testimonials for Flying Kiwi
           </h2>
         </div>
-      </div>
-      {/* Remaining Images 11-15 */}
-      <div className="max-w-7xl mx-auto px-4 py-12 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
-            <Image
-              src="/images/strong/strong11.png"
-              alt="Strong Hearts Program 11"
-              fill
-              className="object-cover"
-            />
+
+        {/* Testimonial Slider */}
+        <div className="relative">
+          <div className="overflow-hidden rounded-2xl">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+            >
+              {testimonials.map((testimonial, index) => (
+                <div key={index} className="w-full flex-shrink-0">
+                  <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-white/5">
+                    <Image
+                      src={testimonial.image}
+                      alt={`Strong Hearts Program ${testimonial.id}`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
-            <Image
-              src="/images/strong/strong12.jpg"
-              alt="Strong Hearts Program 12"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
-            <Image
-              src="/images/strong/strong13.jpg"
-              alt="Strong Hearts Program 13"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
-            <Image
-              src="/images/strong/strong14.png"
-              alt="Strong Hearts Program 14"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
-            <Image
-              src="/images/strong/strong15.png"
-              alt="Strong Hearts Program 15"
-              fill
-              className="object-cover"
-            />
+
+          {/* Slider Controls */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all hover:scale-110"
+            aria-label="Previous testimonial"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all hover:scale-110"
+            aria-label="Next testimonial"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+
+          {/* Slider Indicators */}
+          <div className="flex justify-center mt-6 space-x-2">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-3 h-3 rounded-full transition-all ${
+                  currentSlide === index
+                    ? "bg-blue-600 w-8"
+                    : "bg-gray-300 hover:bg-gray-400"
+                }`}
+                aria-label={`Go to testimonial ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
       </div>
