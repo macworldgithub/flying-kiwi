@@ -32,7 +32,7 @@ export const PaymentCard = ({
       if (!existingScript) {
         const script = document.createElement("script");
         script.src =
-          "https://api.quickstream.support.qvalent.com/rest/v1/quickstream-api-1.0.min.js";
+          "https://api.quickstream.westpac.com.au/rest/v1/quickstream-api-1.0.min.js";
         script.id = "quickstream-js";
         script.async = true;
         script.onload = initQuickstream;
@@ -48,13 +48,16 @@ export const PaymentCard = ({
       const container = document.getElementById("creditCardContainer");
       if (container) container.innerHTML = "";
 
-      window.QuickstreamAPI.init({
+      // window.QuickstreamAPI.init({
+      //   publishableApiKey:
+      //     // "TIAB_PUB_sawvcp2cgmdfiyehcysqpe6qh6ajk4pbhgasz3t9tetu7t3r9p767ygsmmxm",
+      //     // "TIAB_PUB_6qmasp5p4aknyy4nys55nsndtuirjfe5sc2dcujrzcvnpcx4i8hc2pkjvi4w",
+      //     "TIAB_PUB_6qmasp5p4aknyy4nys55nsndtuirjfe5sc2dcujrzcvnpcx4i8hc2pkjvi4w",
+      // });
+window.QuickstreamAPI.init({
         publishableApiKey:
-          // "TIAB_PUB_sawvcp2cgmdfiyehcysqpe6qh6ajk4pbhgasz3t9tetu7t3r9p767ygsmmxm",
-          // "TIAB_PUB_6qmasp5p4aknyy4nys55nsndtuirjfe5sc2dcujrzcvnpcx4i8hc2pkjvi4w",
-          "TIAB_PUB_6qmasp5p4aknyy4nys55nsndtuirjfe5sc2dcujrzcvnpcx4i8hc2pkjvi4w",
+          "TIAB_PUB_sawvcp2cgmdfiyehcysqpe6qh6ajk4pbhgasz3t9tetu7t3r9p767ygsmmxm",
       });
-
       let trustedFrame: any = null;
       const submitBtn = document.getElementById(
         "submitBtn",
