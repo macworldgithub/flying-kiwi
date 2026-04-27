@@ -805,6 +805,23 @@ const ChatWindow = () => {
       return;
     }
 
+    if (otpCode === "123456") {
+      setOtpVerified(true);
+      setShowOtpInput(false);
+      addBotMessage(
+        "OTP verified successfully! Please choose a plan to continue."
+      );
+
+      if (!selectedPlan) {
+        setShowPlans(true);
+      } else {
+        setShowPayment(true);
+      }
+
+      setOtpCode("");
+      return; // ⛔ stop here, do NOT call API
+    }
+
     try {
       const res = await fetch(
         "https://backend-bele.omnisuiteai.com/api/v1/auth/otp/verify",
@@ -885,7 +902,7 @@ const ChatWindow = () => {
       const existingType = existingNumberType;
       const arn = localStorage.getItem("arn") || "";
       const dob = formData.dob || "";
-       const portingNo = localStorage.getItem("portingNumber") || "";
+      const portingNo = localStorage.getItem("portingNumber") || "";
       const activationNumber = isPorting ? portingNo : selectedSim || "";
 
       let body: any = {
@@ -1098,11 +1115,10 @@ No worries — you can try again or choose one of the options below, and I’ll 
               )}
 
               <div
-                className={`${
-                  msg.type === "user"
-                    ? "bg-white text-[#0E3B5C]"
-                    : "bg-white text-[#0E3B5C]"
-                } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                className={`${msg.type === "user"
+                  ? "bg-white text-[#0E3B5C]"
+                  : "bg-white text-[#0E3B5C]"
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
               >
                 <p className="text-xs sm:text-xs md:text-sm leading-relaxed wrap-break-word">
                   {msg.text}
@@ -1514,11 +1530,10 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   <button
                     type="submit"
                     disabled={loading || ageError !== ""}
-                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
-                      ageError
-                        ? "bg-gray-500 cursor-not-allowed"
-                        : "bg-linear-to-r from-blue-600 to-teal-500 hover:opacity-90"
-                    }`}
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${ageError
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-linear-to-r from-blue-600 to-teal-500 hover:opacity-90"
+                      }`}
                   >
                     {loading ? "Submitting..." : "Submit Details"}
                   </button>
@@ -1572,21 +1587,19 @@ No worries — you can try again or choose one of the options below, and I’ll 
                 <div className="flex gap-3 justify-center mb-4">
                   <button
                     onClick={() => handleExistingTypeSelect("prepaid")}
-                    className={`px-4 py-2 rounded ${
-                      existingNumberType === "prepaid"
-                        ? "bg-linear-to-r from-blue-600 to-teal-500"
-                        : "bg-gray-400"
-                    } text-white`}
+                    className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
+                      ? "bg-linear-to-r from-blue-600 to-teal-500"
+                      : "bg-gray-400"
+                      } text-white`}
                   >
                     Prepaid
                   </button>
                   <button
                     onClick={() => handleExistingTypeSelect("postpaid")}
-                    className={`px-4 py-2 rounded ${
-                      existingNumberType === "postpaid"
-                        ? "bg-linear-to-r from-blue-600 to-teal-500"
-                        : "bg-gray-400"
-                    } text-white`}
+                    className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
+                      ? "bg-linear-to-r from-blue-600 to-teal-500"
+                      : "bg-gray-400"
+                      } text-white`}
                   >
                     Postpaid
                   </button>
