@@ -577,7 +577,7 @@ const ChatWindow = () => {
 
   const handleExistingNumber = () => {
     setShowNumberTypeSelection(false);
-    setShowConfirmNewNumber(true);
+    setShowConfirmNewNumber(false);
     setExistingNumberType(null);
     setShowArnInput(false);
     setArn("");
@@ -612,6 +612,7 @@ const ChatWindow = () => {
       setIsPorting(true);
       setHasSelectedNumber(true);
       setShowNumberButtons(false);
+      setSelectedSim(existingPhone);
 
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
@@ -884,14 +885,16 @@ const ChatWindow = () => {
       const existingType = existingNumberType;
       const arn = localStorage.getItem("arn") || "";
       const dob = formData.dob || "";
+       const portingNo = localStorage.getItem("portingNumber") || "";
+      const activationNumber = isPorting ? portingNo : selectedSim || "";
 
       let body: any = {
-        number: selectedSim,
+        number: activationNumber,
         cust: {
           custNo,
           suburb: formData.suburb,
           postcode: formData.postcode,
-          address: formData.address,
+          address: formData.address.trim(),
           email: formData.email,
         },
         planNo: String(selectedPlan?.planNo),
@@ -902,7 +905,7 @@ const ChatWindow = () => {
         body.numType = existingType;
 
         if (existingType === "prepaid") {
-          body.cust.dob = formatDob(dob);
+          body.cust.dob = dob;
         } else if (existingType === "postpaid") {
           body.cust.arn = arn;
         }
@@ -1081,9 +1084,8 @@ No worries — you can try again or choose one of the options below, and I’ll 
           {chat.map((msg) => (
             <div
               key={msg.id}
-              className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                msg.type === "user" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
             >
               {msg.type === "bot" && (
                 <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full shrink-0 flex items-center justify-center overflow-hidden">
