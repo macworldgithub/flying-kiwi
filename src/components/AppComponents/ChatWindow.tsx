@@ -805,23 +805,6 @@ const ChatWindow = () => {
       return;
     }
 
-    if (otpCode === "123456") {
-      setOtpVerified(true);
-      setShowOtpInput(false);
-      addBotMessage(
-        "OTP verified successfully! Please choose a plan to continue."
-      );
-
-      if (!selectedPlan) {
-        setShowPlans(true);
-      } else {
-        setShowPayment(true);
-      }
-
-      setOtpCode("");
-      return; // ⛔ stop here, do NOT call API
-    }
-
     try {
       const res = await fetch(
         "https://backend-bele.omnisuiteai.com/api/v1/auth/otp/verify",
