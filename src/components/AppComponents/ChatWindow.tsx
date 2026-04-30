@@ -1127,7 +1127,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   Flying Kiwi Assistant
                 </p>
                 <p className="text-[#0E3B5C] text-xs sm:text-sm leading-relaxed">
-                  Choose and option below{typingDots}
+                  Just a moment{typingDots}
                 </p>
               </div>
             </div>
