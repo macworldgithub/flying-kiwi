@@ -1026,7 +1026,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
   }, [showDetailsForm, isTransferMode]);
 
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-[#05263D] overflow-hidden  md:mt-10 max-sm:mt-4 max-md:px-2">
+    <div className="relative w-full h-[100dvh] bg-[#05263D] overflow-hidden">
       {/* Background layers */}
       <div
         className="absolute inset-0 bg-cover bg-center blur-sm opacity-60"
@@ -1035,7 +1035,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
       <div className="absolute inset-0 bg-linear-to-br from-[#0E3B5C]/80 via-[#05263D]/90 to-[#000000]/85 backdrop-blur-md" />
 
       {/* Chat window container */}
-      <div className="relative z-10 max-w-4xl md:w-[80%] lg:max-w-[90%] md:h-[80vh] max-md:h-[70vh] mx-auto bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+    <div className="absolute mt-18 inset-0 z-10 w-full h-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
 
         <div className="flex justify-between items-center p-3 sm:p-4 bg-linear-to-r from-[#A9D7F1] via-[#F9F4F8] to-[#F8CFF3] shadow-md">
@@ -1067,7 +1067,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
         </div>
 
         {/* Chat body */}
-        <div className="flex flex-col bg-linear-to-b from-[#A9D7F1]/30 via-[#F9F4F8]/40 to-[#F8CFF3]/30 px-3 sm:px-6 py-4 sm:py-6 overflow-y-auto scroll-smooth">
+        <div className="flex flex-col bg-linear-to-b from-[#A9D7F1]/30 via-[#F9F4F8]/40 to-[#F8CFF3]/30 px-3 sm:px-6 py-[10rem]  overflow-y-auto scroll-smooth">
           <div className="text-center mb-4 sm:mb-6 mt-2 sm:mt-4">
             <h2 className="text-[#ffffff] font-semibold text-base sm:text-lg mb-1 drop-shadow-sm mt-10">
               How can I help you today?
