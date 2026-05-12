@@ -1035,7 +1035,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
       <div className="absolute inset-0 bg-linear-to-br from-[#0E3B5C]/80 via-[#05263D]/90 to-[#000000]/85 backdrop-blur-md" />
 
       {/* Chat window container */}
-    <div className="absolute mt-18 inset-0 z-10 w-full h-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl flex flex-col overflow-hidden">
+      <div className="absolute mt-18 inset-0 z-10 w-full h-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
 
         <div className="flex justify-between items-center p-3 sm:p-4 bg-linear-to-r from-[#A9D7F1] via-[#F9F4F8] to-[#F8CFF3] shadow-md">
@@ -1069,7 +1069,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
         {/* Chat body */}
         <div className="flex flex-col bg-linear-to-b from-[#A9D7F1]/30 via-[#F9F4F8]/40 to-[#F8CFF3]/30 px-3 sm:px-6 py-[10rem]  overflow-y-auto scroll-smooth">
           <div className="text-center mb-4 sm:mb-6 mt-2 sm:mt-4">
-            <h2 className="text-[#ffffff] font-semibold text-base sm:text-lg mb-1 drop-shadow-sm mt-10">
+            <h2 className="text-[#ffffff] font-semibold text-base sm:text-lg mb-1 drop-shadow-sm">
               How can I help you today?
             </h2>
           </div>
@@ -1084,9 +1084,8 @@ No worries — you can try again or choose one of the options below, and I’ll 
           {chat.map((msg) => (
             <div
               key={msg.id}
-              className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                msg.type === "user" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
             >
               {msg.type === "bot" && (
                 <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full shrink-0 flex items-center justify-center overflow-hidden">
@@ -1099,11 +1098,10 @@ No worries — you can try again or choose one of the options below, and I’ll 
               )}
 
               <div
-                className={`${
-                  msg.type === "user"
-                    ? "bg-white text-[#0E3B5C]"
-                    : "bg-white text-[#0E3B5C]"
-                } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                className={`${msg.type === "user"
+                  ? "bg-white text-[#0E3B5C]"
+                  : "bg-white text-[#0E3B5C]"
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
               >
                 <p className="text-xs sm:text-xs md:text-sm leading-relaxed wrap-break-word">
                   {msg.text}
@@ -1134,7 +1132,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
           )}
 
           {showInitialOptions && !selectedPlan && (
-            <div className="flex flex-col gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 mb-4 mt-32">
+            <div className="flex flex-col gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 mb-4 mt-12">
               {/* <p className="text-white text-center font-medium mb-2">
                 How can I help you today?
               </p> */}
@@ -1515,11 +1513,10 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   <button
                     type="submit"
                     disabled={loading || ageError !== ""}
-                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
-                      ageError
-                        ? "bg-gray-500 cursor-not-allowed"
-                        : "bg-linear-to-r from-blue-600 to-teal-500 hover:opacity-90"
-                    }`}
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${ageError
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-linear-to-r from-blue-600 to-teal-500 hover:opacity-90"
+                      }`}
                   >
                     {loading ? "Submitting..." : "Submit Details"}
                   </button>
@@ -1573,21 +1570,19 @@ No worries — you can try again or choose one of the options below, and I’ll 
                 <div className="flex gap-3 justify-center mb-4">
                   <button
                     onClick={() => handleExistingTypeSelect("prepaid")}
-                    className={`px-4 py-2 rounded ${
-                      existingNumberType === "prepaid"
-                        ? "bg-linear-to-r from-blue-600 to-teal-500"
-                        : "bg-gray-400"
-                    } text-white`}
+                    className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
+                      ? "bg-linear-to-r from-blue-600 to-teal-500"
+                      : "bg-gray-400"
+                      } text-white`}
                   >
                     Prepaid
                   </button>
                   <button
                     onClick={() => handleExistingTypeSelect("postpaid")}
-                    className={`px-4 py-2 rounded ${
-                      existingNumberType === "postpaid"
-                        ? "bg-linear-to-r from-blue-600 to-teal-500"
-                        : "bg-gray-400"
-                    } text-white`}
+                    className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
+                      ? "bg-linear-to-r from-blue-600 to-teal-500"
+                      : "bg-gray-400"
+                      } text-white`}
                   >
                     Postpaid
                   </button>
