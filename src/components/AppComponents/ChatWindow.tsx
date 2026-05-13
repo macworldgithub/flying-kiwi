@@ -80,6 +80,13 @@ const ChatWindow = () => {
   const [typingDots, setTypingDots] = useState("");
   const [showTip, setShowTip] = useState(true);
 
+  const [isWaitingForName, setIsWaitingForName] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [showIdSelection, setShowIdSelection] = useState(false);
+  const [pendingNumberChoice, setPendingNumberChoice] = useState<
+    "new" | "existing" | null
+  >(null);
+
   useEffect(() => {
     if (!loading) {
       setTypingDots("");
@@ -377,28 +384,17 @@ const ChatWindow = () => {
       .join(", ");
 
     setShowDetailsForm(false);
-    if (isTransferMode) {
-      setShowExistingNumberOptions(true);
-    } else {
-      setShowNumberTypeSelection(true);
-    }
     await handleSend(formatted);
-    const numberMessage = isTransferMode
-      ? "Thanks! Now let's proceed with transferring your existing number. Please provide your number details below."
-      : "Thanks!, Now it's time to choose a number -- either a new number or your existing number -- from the options below.";
 
-    setChat((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        type: "bot",
-        text: numberMessage,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      },
-    ]);
+    if (pendingNumberChoice === "existing") {
+      setShowExistingNumberOptions(true);
+      addBotMessage(
+        "Thanks! Now let's proceed with transferring your existing number. Please provide your number details below.",
+      );
+    } else {
+      // For new numbers, handleSend logic will automatically show the number selection buttons
+      // based on the bot's response containing 5 mobile numbers.
+    }
   };
 
   const handleCancelSubmit = () => {
@@ -452,6 +448,21 @@ const ChatWindow = () => {
 
     setChat((prev) => [...prev, userMsg]);
     setMessage("");
+
+    if (isWaitingForName) {
+      setUserName(text);
+      setIsWaitingForName(false);
+      setLoading(true);
+      await new Promise((res) => setTimeout(res, 800));
+      setLoading(false);
+      addBotMessage(
+        `Ok ${text}, let's get your eSIM setup. Do you want to keep your existing phone number or get a new one?`,
+      );
+      setShowNumberTypeSelection(true);
+      setIsTypingEnabled(false);
+      return;
+    }
+
     setLoading(true);
     if (isDeleteIntent(text)) {
       try {
@@ -551,8 +562,14 @@ const ChatWindow = () => {
   };
 
   const handleNewNumber = () => {
+    addUserMessage("New Number");
+    setPendingNumberChoice("new");
+    setIsTransferMode(false);
     setShowNumberTypeSelection(false);
-    setShowConfirmNewNumber(true);
+    addBotMessage(
+      "Make sure you enter the phone number you want to port over and the Birth Date as per your current network. I won’t store any of this information, so don’t worry.",
+    );
+    setShowIdSelection(true);
   };
 
   const confirmNewNumber = async (yes: boolean) => {
@@ -576,15 +593,14 @@ const ChatWindow = () => {
   };
 
   const handleExistingNumber = () => {
+    addUserMessage("Existing Number");
+    setPendingNumberChoice("existing");
+    setIsTransferMode(true);
     setShowNumberTypeSelection(false);
-    setShowConfirmNewNumber(false);
-    setExistingNumberType(null);
-    setShowArnInput(false);
-    setArn("");
-    setExistingPhone("");
-    setShowConfirmExistingNumber(false);
-
-    setShowExistingNumberOptions(true);
+    addBotMessage(
+      "Make sure you enter the phone number you want to port over and the Birth Date as per your current network. I won’t store any of this information, so don’t worry.",
+    );
+    setShowIdSelection(true);
   };
 
   const handleExistingTypeSelect = (type: "prepaid" | "postpaid") => {
@@ -718,6 +734,21 @@ const ChatWindow = () => {
     }
   };
 
+  const addUserMessage = (text: string) => {
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "user" as const,
+        text,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+  };
+
   const addBotMessage = (text: string) => {
     setChat((prev) => [
       ...prev,
@@ -797,6 +828,21 @@ const ChatWindow = () => {
 
     callAPI(`User selected plan ${plan.planName}`);
     setShowPayment(true);
+  };
+
+  const handleIdSelection = (type: string) => {
+    const label =
+      type === "DL"
+        ? "Driver License"
+        : type === "PA"
+          ? "Passport"
+          : type === "PI"
+            ? "Proof of Age Card"
+            : "Pensioner Card";
+    addUserMessage(label);
+    setFormData((prev) => ({ ...prev, custAuthorityType: type }));
+    setShowIdSelection(false);
+    setShowDetailsForm(true);
   };
 
   const handleOtpVerify = async () => {
@@ -999,17 +1045,19 @@ No worries — you can try again or choose one of the options below, and I’ll 
 
     setChat((prev) => [...prev, userMsg]);
 
-    if (option === "Buy an eSIM / Physical SIM") {
-      await handleSend("signup");
+    if (option === "Buy an eSIM / Physical SIM" || option === "transfer-number") {
+      if (option === "transfer-number") {
+        setIsTransferMode(true);
+        setShowTip(true);
+      }
+      addBotMessage("Could I start by asking your name please?");
+      setIsWaitingForName(true);
+      setIsTypingEnabled(true);
     } else if (option === "Account, billing or Technical Problem") {
       setIsTypingEnabled(true);
       addBotMessage(
         "Please describe your account, billing, or technical issue and I'll help you resolve it.",
       );
-    } else if (option === "transfer-number") {
-      setIsTransferMode(true);
-      setShowTip(true);
-      await handleSend("signup");
     }
   };
 
@@ -1470,6 +1518,9 @@ No worries — you can try again or choose one of the options below, and I’ll 
                         <option value="PI" className="text-black ">
                           Proof of age Card
                         </option>
+                        <option value="PC" className="text-black ">
+                          Pensioner Card
+                        </option>
                       </select>
 
                       {formErrors.custAuthorityType && (
@@ -1668,6 +1719,33 @@ No worries — you can try again or choose one of the options below, and I’ll 
                     {num}
                   </button>
                 ))}
+              </div>
+            ) : showIdSelection ? (
+              <div className="flex flex-wrap gap-2 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
+                <button
+                  onClick={() => handleIdSelection("DL")}
+                  className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded hover:opacity-90 text-sm font-medium"
+                >
+                  Driver License
+                </button>
+                <button
+                  onClick={() => handleIdSelection("PA")}
+                  className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded hover:opacity-90 text-sm font-medium"
+                >
+                  Passport
+                </button>
+                <button
+                  onClick={() => handleIdSelection("PI")}
+                  className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded hover:opacity-90 text-sm font-medium"
+                >
+                  Proof of Age Card
+                </button>
+                <button
+                  onClick={() => handleIdSelection("PC")}
+                  className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded hover:opacity-90 text-sm font-medium"
+                >
+                  Pensioner Card
+                </button>
               </div>
             ) : showPlans && !selectedPlan && plans.length > 0 ? (
               <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
