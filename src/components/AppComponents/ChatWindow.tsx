@@ -99,8 +99,13 @@ const ChatWindow = () => {
 
     return () => clearInterval(interval);
   }, [loading]);
+  const hasLoadedPlans = React.useRef(false);
+
   useEffect(() => {
     const loadPlans = async () => {
+      if (hasLoadedPlans.current) return;
+      hasLoadedPlans.current = true;
+
       try {
         const res = await fetch(
           "https://backend-bele.omnisuiteai.com/api/v1/plans",
@@ -115,8 +120,12 @@ const ChatWindow = () => {
           const match = list.find((p) => p.planName === planParam);
           if (match) {
             setSelectedPlan(match);
-            setShowDetailsForm(true);
+            // New flow: Ask for name first
+            addBotMessage("Could I start by asking your name please?");
+            setIsWaitingForName(true);
+            setIsTypingEnabled(true);
             setShowInitialOptions(false); // ← Don't show 3 options
+            return;
           }
         } else {
           setShowInitialOptions(true); // ← Show 3 options only when no plan in URL
@@ -124,32 +133,6 @@ const ChatWindow = () => {
       } catch (e) {
         console.error("Failed loading plans:", e);
         setShowInitialOptions(true);
-      }
-    };
-
-    loadPlans();
-  }, [searchParams]);
-  useEffect(() => {
-    const loadPlans = async () => {
-      try {
-        const res = await fetch(
-          "https://backend-bele.omnisuiteai.com/api/v1/plans",
-        );
-        const data = await res.json();
-        const list: Plan[] = data.data || [];
-        setPlans(list);
-
-        // Preselect plan from URL
-        const planParam = searchParams.get("plan");
-        if (planParam) {
-          const match = list.find((p) => p.planName === planParam);
-          if (match) {
-            setSelectedPlan(match);
-            setShowDetailsForm(true);
-          }
-        }
-      } catch (e) {
-        console.error("Failed loading plans:", e);
       }
     };
 
@@ -842,6 +825,13 @@ const ChatWindow = () => {
     addUserMessage(label);
     setFormData((prev) => ({ ...prev, custAuthorityType: type }));
     setShowIdSelection(false);
+
+    if (selectedPlan) {
+      addBotMessage(
+        `You selected plan ${selectedPlan.planName} — $${selectedPlan.price}. Let’s continue with your setup.`,
+      );
+    }
+
     setShowDetailsForm(true);
   };
 
