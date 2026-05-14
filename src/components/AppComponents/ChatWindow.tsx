@@ -924,6 +924,7 @@ const ChatWindow = () => {
   };
 
   const handleActivateOrder = async () => {
+    setLoading(true);
     try {
       const isPorting =
         existingNumberType === "prepaid" || existingNumberType === "postpaid";
@@ -996,7 +997,8 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
       ]);
       setFlowCompleted(true);
       setShowInitialOptions(false);
-      setIsTypingEnabled(false);
+      setIsTypingEnabled(true);
+      setLoading(false);
     } catch (err) {
       console.error("Activation error:", err);
 
@@ -1811,7 +1813,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   if (success) handleActivateOrder();
                 }}
               />
-            ) : isTypingEnabled && !flowCompleted ? (
+            ) : isTypingEnabled ? (
               <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">
                 <input
                   type="text"
