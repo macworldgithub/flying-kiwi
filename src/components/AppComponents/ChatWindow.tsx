@@ -367,9 +367,18 @@ const ChatWindow = () => {
       .join(", ");
 
     setShowDetailsForm(false);
+
+    if (isTransferMode && !pendingNumberChoice) {
+      setShowExistingNumberOptions(true);
+    }
+
     await handleSend(formatted);
 
-    if (pendingNumberChoice === "existing") {
+    if (isTransferMode && !pendingNumberChoice) {
+      addBotMessage(
+        "Thanks! Now let's proceed with transferring your existing number. Please provide your number details below.",
+      );
+    } else if (pendingNumberChoice === "existing") {
       setShowExistingNumberOptions(true);
       addBotMessage(
         "Thanks! Now let's proceed with transferring your existing number. Please provide your number details below.",
@@ -1035,14 +1044,14 @@ No worries — you can try again or choose one of the options below, and I’ll 
 
     setChat((prev) => [...prev, userMsg]);
 
-    if (option === "Buy an eSIM / Physical SIM" || option === "transfer-number") {
-      if (option === "transfer-number") {
-        setIsTransferMode(true);
-        setShowTip(true);
-      }
+    if (option === "Buy an eSIM / Physical SIM") {
       addBotMessage("Could I start by asking your name please?");
       setIsWaitingForName(true);
       setIsTypingEnabled(true);
+    } else if (option === "transfer-number") {
+      setIsTransferMode(true);
+      setShowTip(true);
+      await handleSend("signup");
     } else if (option === "Account, billing or Technical Problem") {
       setIsTypingEnabled(true);
       addBotMessage(
@@ -1508,9 +1517,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                         <option value="PI" className="text-black ">
                           Proof of age Card
                         </option>
-                        <option value="PC" className="text-black ">
-                          Pensioner Card
-                        </option>
+
                       </select>
 
                       {formErrors.custAuthorityType && (
@@ -1730,12 +1737,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                 >
                   Proof of Age Card
                 </button>
-                <button
-                  onClick={() => handleIdSelection("PC")}
-                  className="bg-linear-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded hover:opacity-90 text-sm font-medium"
-                >
-                  Pensioner Card
-                </button>
+
               </div>
             ) : showPlans && !selectedPlan && plans.length > 0 ? (
               <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
